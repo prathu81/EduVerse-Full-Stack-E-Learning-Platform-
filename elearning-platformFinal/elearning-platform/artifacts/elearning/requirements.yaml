@@ -1,0 +1,24 @@
+packages:
+  "framer-motion": "For fluid UI animations, page transitions, and staggered list reveals"
+  "recharts": "For beautiful analytics charts on the admin dashboard"
+  "date-fns": "For formatting course dates, live class schedules, and activity timestamps"
+  "react-hook-form": "For robust form state management in login, registration, and admin forms"
+  "@hookform/resolvers": "For integrating Zod validation schemas with react-hook-form"
+  "zod": "For defining type-safe form validation schemas"
+  "lucide-react": "For modern, consistent iconography throughout the UI"
+
+images:
+  - path: "artifacts/elearning/public/images/hero-bg.png"
+    description: "Abstract gradient mesh background in deep vivid purple and cyan with soft glowing light leaks, highly professional and modern educational theme"
+    aspect_ratio: "16:9"
+  - path: "artifacts/elearning/public/images/logo.png"
+    description: "Minimal geometric educational logo mark combining a book and a spark in deep purple on transparent background, sleek and modern"
+    aspect_ratio: "1:1"
+  - path: "artifacts/elearning/public/images/auth-bg.png"
+    description: "Elegant 3D abstract shapes representing learning, growth, and structured knowledge in soft purple and blue tones on a clean background"
+    aspect_ratio: "16:9"
+
+notes:
+  - Authentication uses localStorage to persist user session alongside the /api/auth/me verification.
+  - Orval React Query hooks are imported directly from @workspace/api-client-react.
+  - Unsplash images are used strictly for mock course thumbnails where API image URLs might be missing.

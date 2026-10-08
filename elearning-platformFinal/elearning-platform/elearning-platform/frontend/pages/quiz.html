@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz — EduVerse</title>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    body { padding-top: var(--nav-h); }
+    .quiz-container { max-width: 760px; margin: 0 auto; padding: 32px 20px 60px; }
+    .quiz-header-bar { position:fixed; top:var(--nav-h); left:0; right:0; background:var(--bg-card); border-bottom:1px solid var(--border); padding:12px 24px; z-index:100; display:flex; align-items:center; justify-content:space-between; }
+    .timer-display { font-family:var(--font-display); font-size:1.4rem; font-weight:700; display:flex; align-items:center; gap:8px; padding: 6px 18px; border-radius: 10px; background: rgba(255,255,255,0.06); transition: all 0.3s; }
+    .timer-display.warning { background:rgba(245,158,11,0.15); color:#FCD34D; }
+    .timer-display.danger { background:rgba(239,68,68,0.15); color:#FCA5A5; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+    .quiz-progress-bar { position:fixed; top:calc(var(--nav-h)+57px); left:0; right:0; height:3px; background:rgba(255,255,255,0.06); z-index:100; }
+    .quiz-progress-fill { height:100%; background:var(--gradient-primary); transition: width 0.4s; }
+    .start-screen { text-align:center; padding:60px 20px; }
+    .start-screen .quiz-icon { font-size:5rem; margin-bottom:24px; }
+    .quiz-info-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:28px 0; max-width:480px; margin-left:auto; margin-right:auto; }
+    .quiz-info-box { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; text-align:center; }
+    .quiz-info-box .info-val { font-family:var(--font-display); font-size:1.4rem; font-weight:700; }
+    .quiz-info-box .info-label { font-size:0.75rem; color:var(--text-muted); margin-top:3px; }
+    .question-dots { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:28px; }
+    .q-dot { width:32px;height:32px;border-radius:50%;border:2px solid var(--border);background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.2s; }
+    .q-dot.answered { background:var(--primary);border-color:var(--primary);color:#fff; }
+    .q-dot.current { border-color:var(--accent);color:var(--accent); }
+    .question-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-xl); padding:32px; margin-bottom:20px; }
+    .question-num { font-size:0.82rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:12px; }
+    .question-text { font-size:1.15rem; font-weight:600; line-height:1.6; margin-bottom:24px; }
+    .options-grid { display:grid; gap:10px; }
+    .review-item { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; margin-bottom:10px; }
+    .review-item.correct { border-color:rgba(16,185,129,0.4); background:rgba(16,185,129,0.06); }
+    .review-item.wrong { border-color:rgba(239,68,68,0.3); background:rgba(239,68,68,0.05); }
+    .score-circle { position:relative; width:160px; height:160px; margin:0 auto 24px; }
+    .score-circle svg { transform:rotate(-90deg); }
+    .score-circle .score-text { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .score-number { font-family:var(--font-display); font-size:2.5rem; font-weight:700; }
+    @media(max-width:600px){ .quiz-info-grid{grid-template-columns:1fr 1fr} }
+  </style>
+</head>
+<body>
+<nav class="navbar scrolled">
+  <div class="nav-container">
+    <a href="/" class="nav-logo"><div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>EduVerse</a>
+    <div class="nav-actions" style="margin-left:auto">
+      <a href="/pages/dashboard.html" class="btn btn-ghost btn-sm"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+  </div>
+</nav>
+
+<!-- QUIZ HEADER BAR (shown during quiz) -->
+<div class="quiz-header-bar" id="quizHeaderBar" style="display:none">
+  <div id="quizTitleBar" style="font-weight:700;font-size:0.95rem"></div>
+  <div class="timer-display" id="timerDisplay"><i class="fas fa-clock"></i><span id="timerText">--:--</span></div>
+  <div style="font-size:0.85rem;color:var(--text-muted)" id="qCounter">Q 1/1</div>
+</div>
+<div class="quiz-progress-bar" id="quizProgressBarWrap" style="display:none">
+  <div class="quiz-progress-fill" id="quizProgressFill" style="width:0%"></div>
+</div>
+
+<div class="quiz-container" id="quizContainer" style="margin-top:64px">
+  <!-- Start / Question / Results screens swap here -->
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+const quizId = new URLSearchParams(window.location.search).get('id');
+let quizData = null;
+let questions = [];
+let answers = {};
+let currentQ = 0;
+let timerInterval = null;
+let secondsLeft = 0;
+let quizStartTime = null;
+
+async function loadQuiz() {
+  document.getElementById('quizContainer').innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-muted)"><i class="fas fa-spinner fa-spin" style="font-size:2rem"></i><p style="margin-top:12px">Loading quiz...</p></div>';
+  try {
+    const data = await API.get(`/quizzes/${quizId}/questions`);
+    quizData = data.quiz;
+    questions = data.questions || [];
+    secondsLeft = (quizData.duration_minutes || 30) * 60;
+    document.title = `${quizData.title} — EduVerse`;
+    showStartScreen();
+  } catch(e) { document.getElementById('quizContainer').innerHTML = `<div style="text-align:center;padding:60px"><i class="fas fa-exclamation-circle" style="font-size:3rem;color:var(--danger);margin-bottom:16px;display:block"></i><p>${e.message}</p><a href="/pages/dashboard.html" class="btn btn-primary">Back to Dashboard</a></div>`; }
+}
+
+function showStartScreen() {
+  document.getElementById('quizHeaderBar').style.display = 'none';
+  document.getElementById('quizProgressBarWrap').style.display = 'none';
+  document.getElementById('quizContainer').innerHTML = `
+    <div class="start-screen">
+      <div class="quiz-icon">📝</div>
+      <h1 style="font-family:var(--font-display);font-size:2rem;margin-bottom:8px">${quizData.title}</h1>
+      <p style="color:var(--text-secondary);margin-bottom:0">${quizData.description||'Test your knowledge with this quiz!'}</p>
+      <div class="quiz-info-grid">
+        <div class="quiz-info-box"><div class="info-val">${questions.length}</div><div class="info-label">Questions</div></div>
+        <div class="quiz-info-box"><div class="info-val">${quizData.duration_minutes}</div><div class="info-label">Minutes</div></div>
+        <div class="quiz-info-box"><div class="info-val">${quizData.pass_percent}%</div><div class="info-label">Pass Mark</div></div>
+        <div class="quiz-info-box"><div class="info-val">${quizData.total_marks}</div><div class="info-label">Total Marks</div></div>
+      </div>
+      <div class="alert alert-warning" style="max-width:480px;margin:0 auto 28px;text-align:left">
+        <i class="fas fa-exclamation-triangle"></i> Once started, the timer cannot be paused. Make sure you're ready!
+      </div>
+      <button class="btn btn-primary btn-xl" onclick="startQuiz()"><i class="fas fa-play"></i> Start Quiz</button>
+      <div style="margin-top:14px"><a href="/pages/dashboard.html" style="color:var(--text-muted);font-size:0.88rem">← Back to Dashboard</a></div>
+    </div>`;
+}
+
+function startQuiz() {
+  quizStartTime = Date.now();
+  currentQ = 0;
+  answers = {};
+  document.getElementById('quizHeaderBar').style.display = 'flex';
+  document.getElementById('quizProgressBarWrap').style.display = 'block';
+  document.getElementById('quizTitleBar').textContent = quizData.title;
+  startTimer();
+  showQuestion(0);
+}
+
+function startTimer() {
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    updateTimerDisplay();
+    if (secondsLeft <= 0) { clearInterval(timerInterval); submitQuiz(true); }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(secondsLeft/60);
+  const s = secondsLeft%60;
+  const text = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const el = document.getElementById('timerDisplay');
+  document.getElementById('timerText').textContent = text;
+  el.classList.remove('warning','danger');
+  if (secondsLeft < 60) el.classList.add('danger');
+  else if (secondsLeft < 180) el.classList.add('warning');
+}
+
+function showQuestion(idx) {
+  currentQ = idx;
+  const q = questions[idx];
+  if (!q) return;
+  const progress = ((idx+1)/questions.length)*100;
+  document.getElementById('quizProgressFill').style.width = progress+'%';
+  document.getElementById('qCounter').textContent = `Q ${idx+1}/${questions.length}`;
+  const dotsHtml = questions.map((_,i)=>`<div class="q-dot ${answers[questions[i].id]?'answered':''} ${i===idx?'current':''}" onclick="showQuestion(${i})">${i+1}</div>`).join('');
+  const options = ['A','B','C','D'].filter(l => q['option_'+l.toLowerCase()]);
+  const optionsHtml = options.map(letter=>`
+    <button class="option-btn ${answers[q.id]===letter?'selected':''}" onclick="selectAnswer(${q.id},'${letter}',this)" id="opt-${q.id}-${letter}">
+      <span class="option-letter">${letter}</span>
+      <span>${q['option_'+letter.toLowerCase()]}</span>
+    </button>`).join('');
+
+  document.getElementById('quizContainer').innerHTML = `
+    <div class="question-dots">${dotsHtml}</div>
+    <div class="question-card">
+      <div class="question-num">Question ${idx+1} of ${questions.length} &nbsp;•&nbsp; ${q.marks||10} Marks</div>
+      <div class="question-text">${q.question_text}</div>
+      <div class="options-grid">${optionsHtml}</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:12px">
+      <button class="btn btn-ghost" onclick="showQuestion(${idx-1})" ${idx===0?'disabled':''}><i class="fas fa-chevron-left"></i> Previous</button>
+      ${idx < questions.length-1
+        ? `<button class="btn btn-primary" onclick="showQuestion(${idx+1})">Next <i class="fas fa-chevron-right"></i></button>`
+        : `<button class="btn btn-success" onclick="submitQuiz(false)"><i class="fas fa-check"></i> Submit Quiz</button>`}
+    </div>`;
+}
+
+function selectAnswer(qId, letter, btn) {
+  answers[qId] = letter;
+  document.querySelectorAll(`[id^="opt-${qId}-"]`).forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  // Update dot
+  const dots = document.querySelectorAll('.q-dot');
+  if (dots[currentQ]) dots[currentQ].classList.add('answered');
+}
+
+async function submitQuiz(timeout=false) {
+  if (!timeout) {
+    const unanswered = questions.filter(q=>!answers[q.id]).length;
+    if (unanswered > 0 && !confirm(`You have ${unanswered} unanswered question(s). Submit anyway?`)) return;
+  }
+  clearInterval(timerInterval);
+  document.getElementById('quizHeaderBar').style.display = 'none';
+  document.getElementById('quizProgressBarWrap').style.display = 'none';
+  document.getElementById('quizContainer').innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-muted)"><i class="fas fa-spinner fa-spin" style="font-size:2rem"></i><p style="margin-top:12px">Submitting...</p></div>';
+  const timeTaken = Math.floor((Date.now()-quizStartTime)/1000);
+  const answersArr = Object.entries(answers).map(([qId,opt])=>({question_id:parseInt(qId),selected_option:opt}));
+  try {
+    const result = await API.post(`/quizzes/${quizId}/submit`, { answers: answersArr, time_taken_seconds: timeTaken });
+    showResults(result, timeTaken);
+  } catch(e) {
+    // Fallback local calculation
+    let score=0, total=0;
+    const review = questions.map(q=>{
+      const sel = answers[q.id];
+      const correct = q.correct_option;
+      const is_correct = sel===correct;
+      if(is_correct) score+=q.marks||10;
+      total+=q.marks||10;
+      return {question:q.question_text,selected:sel,correct,is_correct,option_a:q.option_a,option_b:q.option_b,option_c:q.option_c,option_d:q.option_d};
+    });
+    showResults({score,total_marks:total,percentage:total>0?(score/total*100).toFixed(2):0,is_passed:total>0&&(score/total*100)>=quizData.pass_percent,review},timeTaken);
+  }
+}
+
+function showResults(result, timeTaken) {
+  const pct = parseFloat(result.percentage)||0;
+  const passed = result.is_passed;
+  const mins = Math.floor(timeTaken/60), secs=timeTaken%60;
+  const circumference = 2*Math.PI*70;
+  const offset = circumference*(1-pct/100);
+  const color = passed?'#10B981':pct>=40?'#F59E0B':'#EF4444';
+  const emoji = passed?(pct>=90?'🏆':pct>=75?'🎉':'✅'):'📚';
+  const msg = passed?(pct>=90?'Outstanding! Perfect score!':pct>=75?'Great job! You passed!':'You passed! Keep it up!'):'Keep studying and try again!';
+
+  let reviewHtml = '';
+  if (result.review?.length) {
+    reviewHtml = `
+      <h3 style="margin:32px 0 16px;font-size:1rem">Answer Review</h3>
+      ${result.review.map((r,i)=>`
+        <div class="review-item ${r.is_correct?'correct':'wrong'}">
+          <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px">
+            <span style="color:${r.is_correct?'var(--success)':'var(--danger)'};flex-shrink:0">${r.is_correct?'✅':'❌'}</span>
+            <strong style="font-size:0.9rem">Q${i+1}: ${r.question}</strong>
+          </div>
+          <div style="font-size:0.82rem;padding-left:26px">
+            <span style="color:${r.is_correct?'var(--success)':'var(--danger)'};margin-right:16px">Your answer: <strong>${r.selected?`Option ${r.selected}`:'Not answered'}</strong></span>
+            <span style="color:var(--success)">Correct: <strong>Option ${r.correct}</strong></span>
+          </div>
+        </div>`).join('')}`;
+  }
+
+  document.getElementById('quizContainer').innerHTML = `
+    <div style="text-align:center;padding:20px 0">
+      <div class="score-circle">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="12"/>
+          <circle cx="80" cy="80" r="70" fill="none" stroke="${color}" stroke-width="12" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round" style="transition:stroke-dashoffset 1s ease"/>
+        </svg>
+        <div class="score-text">
+          <div class="score-number" style="color:${color}">${Math.round(pct)}%</div>
+          <div style="font-size:0.72rem;color:var(--text-muted)">Score</div>
+        </div>
+      </div>
+      <div style="font-size:3rem;margin-bottom:8px">${emoji}</div>
+      <h2 style="font-family:var(--font-display);font-size:1.8rem;margin-bottom:6px">${passed?'Congratulations!':'Try Again!'}</h2>
+      <p style="color:var(--text-secondary);margin-bottom:24px">${msg}</p>
+      <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:32px">
+        ${[['fa-check-circle','Correct',result.score+' pts','var(--success)'],
+           ['fa-times-circle','Wrong',((result.total_marks||0)-(result.score||0))+' pts','var(--danger)'],
+           ['fa-star','Total',result.total_marks+' pts','var(--primary-light)'],
+           ['fa-clock','Time',`${mins}m ${secs}s`,'var(--warning)']].map(([icon,label,val,color])=>`
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 20px;text-align:center;min-width:100px">
+            <i class="fas ${icon}" style="color:${color};font-size:1.1rem;margin-bottom:6px;display:block"></i>
+            <div style="font-family:var(--font-display);font-weight:700">${val}</div>
+            <div style="font-size:0.72rem;color:var(--text-muted)">${label}</div>
+          </div>`).join('')}
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-primary btn-lg" onclick="location.reload()"><i class="fas fa-redo"></i> Retake Quiz</button>
+        <a href="/pages/dashboard.html" class="btn btn-ghost btn-lg"><i class="fas fa-home"></i> Dashboard</a>
+      </div>
+    </div>
+    ${reviewHtml}`;
+}
+
+if (quizId) loadQuiz();
+else { document.getElementById('quizContainer').innerHTML = '<div style="text-align:center;padding:60px"><p>No quiz specified</p><a href="/pages/dashboard.html" class="btn btn-primary">Back to Dashboard</a></div>'; }
+</script>
+</body>
+</html>

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Dashboard — EduVerse</title>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .welcome-banner { background:linear-gradient(135deg,rgba(79,70,229,0.25),rgba(124,58,237,0.15)); border:1px solid rgba(79,70,229,0.25); border-radius:var(--radius-xl); padding:28px 32px; margin-bottom:28px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+    .welcome-title { font-family:var(--font-display); font-size:1.5rem; font-weight:700; margin-bottom:4px; }
+    .enrolled-course-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; display:flex; gap:16px; align-items:flex-start; transition:all 0.2s; }
+    .enrolled-course-card:hover { border-color:var(--border-2); }
+    .enrolled-course-icon { width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0; }
+    .live-class-item { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; display:flex; align-items:center; gap:16px; margin-bottom:10px; }
+    .notification-item { display:flex; align-items:flex-start; gap:12px; padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+    .notification-item:last-child { border-bottom:none; }
+    .notif-icon { width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0; }
+    .achievement-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:18px; text-align:center; transition:all 0.2s; }
+    .achievement-card.unlocked { border-color:rgba(245,158,11,0.4); background:rgba(245,158,11,0.06); }
+    .achievement-card.locked { opacity:0.5; filter:grayscale(1); }
+    .achievement-icon { font-size:2rem; margin-bottom:8px; }
+    .cert-card { background:linear-gradient(135deg,#0A0F2E,#0D1847); border:1px solid rgba(79,70,229,0.3); border-radius:var(--radius-lg); padding:22px; display:flex; align-items:center; gap:16px; transition:all 0.2s; }
+    .cert-card:hover { border-color:var(--primary); box-shadow:var(--shadow-glow); }
+    .profile-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    @media(max-width:600px){ .profile-grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+<nav class="navbar scrolled">
+  <div class="nav-container">
+    <a href="/" class="nav-logo"><div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>EduVerse</a>
+    <div class="nav-links">
+      <a href="/pages/courses.html" class="nav-link">Browse Courses</a>
+    </div>
+    <div class="nav-actions" style="margin-left:auto">
+      <button class="btn btn-ghost btn-sm" style="position:relative" onclick="showSection('notifications')">
+        <i class="fas fa-bell"></i>
+        <span id="notifBadge" style="position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;border-radius:50%;width:16px;height:16px;font-size:0.65rem;display:none;align-items:center;justify-content:center">0</span>
+      </button>
+      <div class="nav-avatar" id="navAvatarEl">S</div>
+      <span id="navNameEl" style="font-size:0.88rem;font-weight:600"></span>
+      <button class="btn btn-ghost btn-sm" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+    </div>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Main</div>
+      <div class="sidebar-link active" onclick="showSection('overview',this)"><i class="fas fa-home"></i> Overview</div>
+      <div class="sidebar-link" onclick="showSection('my-courses',this)"><i class="fas fa-book-open"></i> My Courses</div>
+      <div class="sidebar-link" onclick="showSection('live-classes',this)"><i class="fas fa-video"></i> Live Classes</div>
+      <div class="sidebar-link" onclick="showSection('quizzes',this)"><i class="fas fa-tasks"></i> Quizzes</div>
+      <div class="sidebar-section-label">Learning</div>
+      <div class="sidebar-link" onclick="showSection('attendance',this)"><i class="fas fa-clipboard-check"></i> Attendance</div>
+      <div class="sidebar-link" onclick="showSection('certificates',this)"><i class="fas fa-certificate"></i> Certificates</div>
+      <div class="sidebar-link" onclick="showSection('notifications',this)"><i class="fas fa-bell"></i> Notifications</div>
+      <div class="sidebar-section-label">Account</div>
+      <div class="sidebar-link" onclick="showSection('profile',this)"><i class="fas fa-user"></i> Profile</div>
+      <a href="/pages/courses.html" class="sidebar-link"><i class="fas fa-plus-circle"></i> Browse Courses</a>
+      <div class="sidebar-link" onclick="logout()" style="color:var(--danger)"><i class="fas fa-sign-out-alt"></i> Logout</div>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <!-- OVERVIEW -->
+    <div id="sec-overview">
+      <div class="welcome-banner">
+        <div>
+          <div class="welcome-title" id="welcomeTitle">Welcome back! 👋</div>
+          <p style="color:var(--text-secondary);margin-bottom:12px">Keep learning, keep growing</p>
+          <a href="/pages/courses.html" class="btn btn-primary"><i class="fas fa-plus"></i> Buy More Courses</a>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:3rem;margin-bottom:4px">🔥</div>
+          <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:700" id="streakCount">0</div>
+          <div style="font-size:0.8rem;color:var(--text-muted)">Day Streak</div>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-grid mb-24">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(79,70,229,0.2)"><i class="fas fa-book" style="color:#818CF8"></i></div>
+          <div><div class="stat-value" id="statEnrolled">0</div><div class="stat-label">Enrolled Courses</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(16,185,129,0.2)"><i class="fas fa-check-circle" style="color:#34D399"></i></div>
+          <div><div class="stat-value" id="statCompleted">0</div><div class="stat-label">Completed</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(245,158,11,0.2)"><i class="fas fa-certificate" style="color:#FCD34D"></i></div>
+          <div><div class="stat-value" id="statCerts">0</div><div class="stat-label">Certificates</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(6,182,212,0.2)"><i class="fas fa-clock" style="color:#67E8F9"></i></div>
+          <div><div class="stat-value" id="statHours">0h</div><div class="stat-label">Hours Learned</div></div>
+        </div>
+      </div>
+
+      <!-- CONTINUE LEARNING -->
+      <div class="table-card mb-24">
+        <div class="table-header">
+          <h3><i class="fas fa-play-circle" style="color:var(--primary-light)"></i> Continue Learning</h3>
+          <button class="btn btn-ghost btn-sm" onclick="showSection('my-courses')">View All</button>
+        </div>
+        <div id="continueLearning" style="padding:20px"></div>
+      </div>
+
+      <!-- UPCOMING CLASSES -->
+      <div class="table-card mb-24">
+        <div class="table-header">
+          <h3><i class="fas fa-calendar" style="color:var(--success)"></i> Upcoming Live Classes</h3>
+          <button class="btn btn-ghost btn-sm" onclick="showSection('live-classes')">View All</button>
+        </div>
+        <div id="upcomingClassesOverview" style="padding:16px"></div>
+      </div>
+
+      <!-- ACHIEVEMENTS -->
+      <h3 style="margin-bottom:16px">Achievements</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px" id="achievementsGrid">
+        ${[['🌱','First Steps','Enrolled in first course',true],['⚡','Quick Learner','Completed a quiz',false],['🎯','Perfect Score','100% on a quiz',false],['📖','Bookworm','5 courses enrolled',false],['🏆','Champion','Completed a course',false],['💎','Elite','10 courses done',false]].map(([icon,title,desc,unlocked])=>`
+          <div class="achievement-card ${unlocked?'unlocked':'locked'}">
+            <div class="achievement-icon">${icon}</div>
+            <div style="font-size:0.82rem;font-weight:700;margin-bottom:3px">${title}</div>
+            <div style="font-size:0.72rem;color:var(--text-muted)">${desc}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- MY COURSES -->
+    <div id="sec-my-courses" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <h2 style="font-family:var(--font-display);font-size:1.5rem">My Courses</h2>
+        <a href="/pages/courses.html" class="btn btn-primary"><i class="fas fa-plus"></i> Buy More Courses</a>
+      </div>
+      <div id="myCoursesGrid" style="display:grid;gap:14px">
+        <div class="skeleton" style="height:100px;border-radius:14px"></div>
+        <div class="skeleton" style="height:100px;border-radius:14px"></div>
+      </div>
+    </div>
+
+    <!-- LIVE CLASSES -->
+    <div id="sec-live-classes" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <h2 style="font-family:var(--font-display);font-size:1.5rem">Live Classes</h2>
+      </div>
+      <div class="filter-bar">
+        <span class="filter-chip active" onclick="filterLive('all',this)">All</span>
+        <span class="filter-chip" onclick="filterLive('scheduled',this)">Upcoming</span>
+        <span class="filter-chip" onclick="filterLive('live',this)">Live Now</span>
+        <span class="filter-chip" onclick="filterLive('completed',this)">Completed</span>
+      </div>
+      <div id="liveClassesGrid"></div>
+    </div>
+
+    <!-- QUIZZES -->
+    <div id="sec-quizzes" style="display:none">
+      <h2 style="font-family:var(--font-display);font-size:1.5rem;margin-bottom:24px">Quizzes & Tests</h2>
+      <div id="quizzesGrid"></div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div id="sec-attendance" style="display:none">
+      <h2 style="font-family:var(--font-display);font-size:1.5rem;margin-bottom:24px">Attendance Tracker</h2>
+      <div style="display:grid;grid-template-columns:1fr 3fr;gap:20px" id="attendanceLayout">
+        <div class="stat-card" style="flex-direction:column;text-align:center;padding:28px">
+          <div style="font-family:var(--font-display);font-size:3rem;font-weight:700;color:var(--success)" id="attendancePercent">0%</div>
+          <div style="font-size:0.85rem;color:var(--text-muted);margin-top:6px">Attendance Rate</div>
+          <div class="progress-bar" style="margin-top:14px"><div class="progress-fill" id="attendanceFill" style="width:0%;background:var(--success)"></div></div>
+        </div>
+        <div class="table-card">
+          <div class="table-header"><h3>Class Attendance Log</h3></div>
+          <table class="data-table">
+            <thead><tr><th>Class</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="attendanceTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CERTIFICATES -->
+    <div id="sec-certificates" style="display:none">
+      <h2 style="font-family:var(--font-display);font-size:1.5rem;margin-bottom:24px">My Certificates</h2>
+      <div class="alert alert-info mb-16"><i class="fas fa-info-circle"></i> Complete 100% of a course to generate your certificate.</div>
+      <div id="certsGrid" style="display:grid;gap:14px"></div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div id="sec-notifications" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <h2 style="font-family:var(--font-display);font-size:1.5rem">Notifications</h2>
+        <button class="btn btn-ghost btn-sm" onclick="markAllRead()"><i class="fas fa-check-double"></i> Mark All Read</button>
+      </div>
+      <div class="table-card"><div id="notificationsList" style="padding:16px 24px"></div></div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="sec-profile" style="display:none">
+      <h2 style="font-family:var(--font-display);font-size:1.5rem;margin-bottom:24px">My Profile</h2>
+      <div style="display:grid;grid-template-columns:280px 1fr;gap:24px;align-items:start">
+        <div class="table-card" style="padding:28px;text-align:center">
+          <div class="nav-avatar" style="width:80px;height:80px;font-size:2rem;margin:0 auto 16px" id="profileAvatar">S</div>
+          <h3 id="profileName" style="font-size:1.1rem;margin-bottom:4px"></h3>
+          <p id="profileEmail" style="font-size:0.82rem;color:var(--text-muted);margin-bottom:4px"></p>
+          <span class="badge badge-primary">Student</span>
+        </div>
+        <div class="table-card" style="padding:24px">
+          <h4 style="margin-bottom:18px;font-size:0.95rem">Personal Information</h4>
+          <div class="profile-grid" id="profileGrid"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- CHATBOT -->
+<button class="chatbot-fab" onclick="toggleChatbot()" id="chatFab" title="Chat with EduBot"><i class="fas fa-robot"></i></button>
+<div class="chatbot-window" id="chatbotWindow">
+  <div class="chatbot-header">
+    <div class="chatbot-bot-avatar"><i class="fas fa-robot"></i></div>
+    <div><h4>EduBot</h4><p>Ask me anything about your courses!</p></div>
+    <button onclick="toggleChatbot()" style="margin-left:auto;background:rgba(255,255,255,0.2);border:none;color:#fff;width:28px;height:28px;border-radius:8px;cursor:pointer"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="chatbot-messages" id="chatMessages">
+    <div class="chat-msg bot">Hi! I'm EduBot 🤖 Ask me anything about your courses, live classes, or learning resources!</div>
+  </div>
+  <div class="chatbot-input">
+    <input type="text" id="chatInput" placeholder="Type your question..." onkeydown="if(event.key==='Enter')sendChat()"/>
+    <button class="chatbot-send" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+if (!requireAuth() || !requireStudent()) {}
+
+let user = API.getUser();
+let enrollments = [];
+let liveClasses = [];
+let allLiveClasses = [];
+let attendance = [];
+let notifications = [];
+let quizzes = [];
+
+function initDashboard() {
+  if (!user) return;
+  document.getElementById('welcomeTitle').textContent = `Welcome back, ${user.full_name?.split(' ')[0]}! 👋`;
+  document.getElementById('navAvatarEl').textContent = (user.full_name||'S')[0].toUpperCase();
+  document.getElementById('navNameEl').textContent = user.full_name?.split(' ')[0] || '';
+  document.getElementById('streakCount').textContent = Math.floor(Math.random()*15)+1;
+  loadAllData();
+}
+
+async function loadAllData() {
+  await Promise.all([loadEnrollments(), loadLiveClasses(), loadAttendance(), loadNotifications(), loadQuizzes()]);
+}
+
+async function loadEnrollments() {
+  try {
+    enrollments = await API.get('/enrollments/my');
+    setEnrolledIds(enrollments.map(e=>e.course_id));
+    document.getElementById('statEnrolled').textContent = enrollments.length;
+    document.getElementById('statCompleted').textContent = enrollments.filter(e=>e.is_completed).length;
+    document.getElementById('statHours').textContent = enrollments.reduce((s,e)=>s+(e.duration_hours||0),0)+'h';
+    renderContinueLearning();
+    renderMyCourses();
+    renderCertificates();
+  } catch(e) { console.error(e); }
+}
+
+async function loadLiveClasses() {
+  try {
+    allLiveClasses = await API.get('/live-classes');
+    liveClasses = allLiveClasses;
+    renderLiveClassesGrid(liveClasses);
+    renderUpcomingClasses();
+  } catch(e) {}
+}
+
+async function loadAttendance() {
+  try {
+    attendance = await API.get('/attendance/my');
+    renderAttendance();
+  } catch(e) {}
+}
+
+async function loadNotifications() {
+  try {
+    notifications = await API.get('/notifications');
+    const unread = notifications.filter(n=>!n.is_read).length;
+    const badge = document.getElementById('notifBadge');
+    if (unread > 0) { badge.style.display='flex'; badge.textContent=unread; }
+    renderNotifications();
+  } catch(e) { renderDefaultNotifications(); }
+}
+
+async function loadQuizzes() {
+  try {
+    quizzes = await API.get('/quizzes');
+    renderQuizzes();
+  } catch(e) {}
+}
+
+function renderContinueLearning() {
+  const el = document.getElementById('continueLearning');
+  if (!enrollments.length) { el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)"><i class="fas fa-book" style="font-size:2rem;margin-bottom:8px;display:block"></i><p>No courses yet.</p><a href="/pages/courses.html" class="btn btn-primary btn-sm" style="margin-top:8px">Browse Courses</a></div>'; return; }
+  const EMOJIS = ['🌐','📊','📱','☁️','🔒','🎨','📣','💼','💻','🗄️'];
+  el.innerHTML = enrollments.slice(0,3).map((e,i)=>`
+    <div style="display:flex;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(79,70,229,0.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">${EMOJIS[i%EMOJIS.length]}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:0.9rem;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.course_title||'Course'}</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${e.progress_percent||0}%"></div></div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:3px">${e.progress_percent||0}% complete</div>
+      </div>
+      <a href="/pages/course-detail.html?id=${e.course_id}" class="btn btn-secondary btn-sm">Continue</a>
+    </div>`).join('');
+}
+
+function renderMyCourses() {
+  const el = document.getElementById('myCoursesGrid');
+  if (!enrollments.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)"><i class="fas fa-book-open" style="font-size:3rem;margin-bottom:12px;display:block"></i><p>You haven\'t enrolled in any courses yet.</p><a href="/pages/courses.html" class="btn btn-primary" style="margin-top:12px">Browse Courses</a></div>'; return; }
+  const EMOJIS = ['🌐','📊','📱','☁️','🔒','🎨','📣','💼','💻','🗄️'];
+  el.innerHTML = enrollments.map((e,i)=>`
+    <div class="enrolled-course-card">
+      <div class="enrolled-course-icon" style="background:rgba(79,70,229,0.2)">${EMOJIS[i%EMOJIS.length]}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-weight:700;font-size:0.95rem;margin-bottom:2px">${e.course_title||'Course'}</div>
+            <div style="font-size:0.78rem;color:var(--text-muted)">${e.instructor_name||'Instructor'} • ${e.level||'Beginner'}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            ${e.is_completed ? '<span class="badge badge-success"><i class="fas fa-check"></i> Completed</span>' : '<span class="badge badge-primary">In Progress</span>'}
+          </div>
+        </div>
+        <div class="progress-bar" style="margin-bottom:4px"><div class="progress-fill" style="width:${e.progress_percent||0}%"></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:0.78rem;color:var(--text-muted)">${e.progress_percent||0}% complete</span>
+          <div style="display:flex;gap:6px">
+            <a href="/pages/course-detail.html?id=${e.course_id}" class="btn btn-secondary btn-sm"><i class="fas fa-play"></i> Continue</a>
+            ${e.is_completed ? `<button class="btn btn-ghost btn-sm" onclick="generateCert(${e.course_id})"><i class="fas fa-certificate"></i> Certificate</button>` : `<button class="btn btn-ghost btn-sm" onclick="updateProgress(${e.course_id},${Math.min(100,(e.progress_percent||0)+10)})"><i class="fas fa-plus"></i> +10%</button>`}
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderLiveClassesGrid(classes) {
+  const el = document.getElementById('liveClassesGrid');
+  if (!classes.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">No live classes available</div>'; return; }
+  el.innerHTML = classes.map(lc=>`
+    <div class="live-class-item" style="margin-bottom:10px">
+      <div style="width:48px;height:48px;border-radius:12px;background:rgba(79,70,229,0.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">📹</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:0.92rem;margin-bottom:2px">${lc.title}</div>
+        <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:6px">
+          <i class="fas fa-calendar"></i> ${formatDateTime(lc.scheduled_at)} • <i class="fas fa-clock"></i> ${lc.duration_minutes} min
+          ${lc.course_title ? ` • <i class="fas fa-book"></i> ${lc.course_title}` : ''}
+        </div>
+        ${getLiveStatus(lc.status)}
+      </div>
+      <div style="flex-shrink:0">
+        ${lc.status==='scheduled'||lc.status==='live' ? `<a href="${lc.zoom_link||'#'}" target="_blank" class="btn btn-primary btn-sm" onclick="markAttendance(${lc.id})"><i class="fas fa-video"></i> Join</a>` : ''}
+        ${lc.status==='completed' && lc.recording_url ? `<a href="${lc.recording_url}" target="_blank" class="btn btn-secondary btn-sm"><i class="fas fa-play"></i> Watch</a>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+function renderUpcomingClasses() {
+  const el = document.getElementById('upcomingClassesOverview');
+  const upcoming = allLiveClasses.filter(lc=>lc.status==='scheduled'||lc.status==='live').slice(0,3);
+  if (!upcoming.length) { el.innerHTML = '<p style="color:var(--text-muted);font-size:0.88rem;text-align:center;padding:12px">No upcoming classes</p>'; return; }
+  el.innerHTML = upcoming.map(lc=>`
+    <div style="display:flex;align-items:center;gap:14px;padding:12px 4px;border-bottom:1px solid rgba(255,255,255,0.04)">
+      <div style="width:40px;height:40px;border-radius:10px;background:rgba(79,70,229,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">📹</div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:0.88rem">${lc.title}</div>
+        <div style="font-size:0.76rem;color:var(--text-muted)">${formatDateTime(lc.scheduled_at)}</div>
+      </div>
+      ${getLiveStatus(lc.status)}
+      <a href="${lc.zoom_link||'#'}" target="_blank" class="btn btn-primary btn-sm" onclick="markAttendance(${lc.id})"><i class="fas fa-video"></i> Join</a>
+    </div>`).join('');
+}
+
+function filterLive(status, btn) {
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  const filtered = status==='all' ? allLiveClasses : allLiveClasses.filter(lc=>lc.status===status);
+  renderLiveClassesGrid(filtered);
+}
+
+function renderAttendance() {
+  const total = allLiveClasses.filter(lc=>lc.status==='completed').length;
+  const attended = attendance.length;
+  const pct = total > 0 ? Math.round((attended/total)*100) : (attendance.length>0?100:0);
+  document.getElementById('attendancePercent').textContent = pct + '%';
+  document.getElementById('attendanceFill').style.width = pct + '%';
+  document.getElementById('attendanceFill').style.background = pct>=75?'var(--success)':pct>=50?'var(--warning)':'var(--danger)';
+  const tbody = document.getElementById('attendanceTable');
+  if (!attendance.length && !allLiveClasses.filter(l=>l.status==='completed').length) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:20px">No attendance records yet</td></tr>'; return;
+  }
+  const rows = allLiveClasses.filter(lc=>lc.status==='completed').map(lc=>{
+    const att = attendance.find(a=>a.live_class_id===lc.id);
+    return `<tr><td>${lc.title}</td><td>${formatDate(lc.scheduled_at)}</td><td>${att?'<span class="badge badge-success"><i class="fas fa-check"></i> Present</span>':'<span class="badge badge-danger"><i class="fas fa-times"></i> Absent</span>'}</td></tr>`;
+  });
+  tbody.innerHTML = rows.join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:20px">No completed classes yet</td></tr>';
+}
+
+function renderCertificates() {
+  const el = document.getElementById('certsGrid');
+  const completed = enrollments.filter(e=>e.is_completed);
+  document.getElementById('statCerts').textContent = completed.length;
+  if (!completed.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)"><i class="fas fa-certificate" style="font-size:3rem;margin-bottom:12px;display:block"></i><p>Complete a course to earn your certificate</p></div>'; return; }
+  el.innerHTML = completed.map(e=>`
+    <div class="cert-card">
+      <div style="font-size:2rem;flex-shrink:0">🏆</div>
+      <div style="flex:1">
+        <div style="font-weight:700;margin-bottom:4px">${e.course_title||'Course'}</div>
+        <div style="font-size:0.78rem;color:var(--text-muted)">Completed • Certificate of Achievement</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="generateCert(${e.course_id})"><i class="fas fa-download"></i> Download</button>
+    </div>`).join('');
+}
+
+function renderNotifications() {
+  const el = document.getElementById('notificationsList');
+  if (!notifications.length) { renderDefaultNotifications(); return; }
+  el.innerHTML = notifications.map(n=>`
+    <div class="notification-item" style="${!n.is_read?'background:rgba(79,70,229,0.05);margin:0 -24px;padding:14px 24px;':''}">
+      <div class="notif-icon" style="background:${n.type==='success'?'rgba(16,185,129,0.2)':n.type==='warning'?'rgba(245,158,11,0.2)':'rgba(79,70,229,0.2)'}">
+        <i class="fas ${n.type==='success'?'fa-check':'fa-bell'}" style="color:${n.type==='success'?'#34D399':'#818CF8'}"></i>
+      </div>
+      <div style="flex:1"><div style="font-weight:600;font-size:0.88rem;margin-bottom:2px">${n.title}</div><div style="font-size:0.82rem;color:var(--text-secondary)">${n.message}</div><div style="font-size:0.74rem;color:var(--text-muted);margin-top:4px">${timeAgo(n.created_at)}</div></div>
+      ${!n.is_read?'<span style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px"></span>':''}
+    </div>`).join('');
+}
+
+function renderDefaultNotifications() {
+  const el = document.getElementById('notificationsList');
+  const defaults = [
+    {icon:'fa-star',color:'#FCD34D',bg:'rgba(245,158,11,0.2)',title:'Welcome to EduVerse!',msg:'Start exploring 100+ courses and join live classes.',time:'Just now'},
+    {icon:'fa-video',color:'#818CF8',bg:'rgba(79,70,229,0.2)',title:'Live Class Available',msg:'Python for Beginners starts tomorrow at 6 PM',time:'2h ago'},
+    {icon:'fa-certificate',color:'#34D399',bg:'rgba(16,185,129,0.2)',title:'Complete a Course!',msg:'Finish your enrolled course to earn a certificate.',time:'1d ago'}
+  ];
+  el.innerHTML = defaults.map(n=>`
+    <div class="notification-item">
+      <div class="notif-icon" style="background:${n.bg}"><i class="fas ${n.icon}" style="color:${n.color}"></i></div>
+      <div style="flex:1"><div style="font-weight:600;font-size:0.88rem;margin-bottom:2px">${n.title}</div><div style="font-size:0.82rem;color:var(--text-secondary)">${n.msg}</div><div style="font-size:0.74rem;color:var(--text-muted);margin-top:4px">${n.time}</div></div>
+    </div>`).join('');
+}
+
+function renderQuizzes() {
+  const el = document.getElementById('quizzesGrid');
+  if (!quizzes.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">No quizzes available yet</div>'; return; }
+  el.innerHTML = quizzes.map(q=>`
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;display:flex;align-items:center;gap:16px;margin-bottom:12px">
+      <div style="width:52px;height:52px;border-radius:14px;background:rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">📝</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:1rem;margin-bottom:3px">${q.title}</div>
+        <div style="font-size:0.8rem;color:var(--text-muted)">${q.course_title||'General'} • ${q.total_questions||0} Questions • ${q.duration_minutes} min • Pass: ${q.pass_percent}%</div>
+      </div>
+      <a href="/pages/quiz.html?id=${q.id}" class="btn btn-primary"><i class="fas fa-pencil-alt"></i> Start Quiz</a>
+    </div>`).join('');
+}
+
+function renderProfile() {
+  if (!user) return;
+  document.getElementById('profileAvatar').textContent = (user.full_name||'S')[0].toUpperCase();
+  document.getElementById('profileName').textContent = user.full_name || '';
+  document.getElementById('profileEmail').textContent = user.email || '';
+  document.getElementById('profileGrid').innerHTML = [
+    ['fa-phone','Phone',user.phone||'Not set'],['fa-phone-alt','Parent Phone',user.parent_phone||'Not set'],
+    ['fa-map-marker-alt','Address',user.address||'Not set'],['fa-graduation-cap','Qualification',user.qualification||'Not set'],
+    ['fa-calendar','Member Since',formatDate(user.created_at||new Date())],['fa-envelope','Email',user.email||'']
+  ].map(([icon,label,val])=>`
+    <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px">
+      <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);margin-bottom:4px"><i class="fas ${icon}" style="margin-right:5px"></i>${label}</div>
+      <div style="font-size:0.9rem;font-weight:500">${val}</div>
+    </div>`).join('');
+}
+
+async function markAttendance(classId) {
+  try { await API.post('/attendance', { live_class_id: classId }); showToast('Attendance marked!', 'success'); } catch(e) {}
+}
+
+async function updateProgress(courseId, pct) {
+  try {
+    await API.put(`/enrollments/${courseId}/progress`, { progress_percent: pct });
+    const e = enrollments.find(en=>en.course_id===courseId);
+    if (e) { e.progress_percent = pct; e.is_completed = pct>=100; }
+    renderContinueLearning(); renderMyCourses();
+    if (pct >= 100) showToast('Course completed! 🎉 Claim your certificate!', 'success');
+    else showToast('Progress updated!', 'success');
+  } catch(e) { showToast('Update failed', 'error'); }
+}
+
+async function generateCert(courseId) {
+  try {
+    const data = await API.post('/certificates/generate', { course_id: courseId });
+    showCertModal(data);
+  } catch(e) { showToast(e.message || 'Error generating certificate', 'error'); }
+}
+
+function showCertModal(data) {
+  const now = new Date();
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay open';
+  modal.style.zIndex = '950';
+  modal.innerHTML = `
+    <div class="modal" style="max-width:650px">
+      <div class="modal-header">
+        <h3><i class="fas fa-certificate" style="color:#FCD34D"></i> Course Certificate</h3>
+        <button class="modal-close" onclick="this.closest('.modal-overlay').remove()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="certificate-template">
+          <div class="cert-title">Certificate of Completion</div>
+          <div class="cert-logo-big">🎓</div>
+          <div style="font-size:0.9rem;color:var(--text-muted);margin-bottom:8px">This is to certify that</div>
+          <div class="cert-student">${data.student_name || user?.full_name || 'Student'}</div>
+          <div style="color:var(--text-secondary);margin-bottom:4px">has successfully completed</div>
+          <div class="cert-main-text">${data.course_title || 'EduVerse Course'}</div>
+          <div class="cert-footer">
+            <div class="cert-sign"><strong>EduVerse Platform</strong><br>Authorized Signature</div>
+            <div style="text-align:center"><div style="font-size:0.75rem;color:var(--text-muted)">Certificate No.</div><div style="font-size:0.82rem;font-weight:600;color:var(--primary-light)">${data.certificate_number}</div></div>
+            <div class="cert-sign"><strong>${now.toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'})}</strong><br>Date of Issue</div>
+          </div>
+        </div>
+        <p style="text-align:center;font-size:0.82rem;color:var(--text-muted);margin-top:14px">Certificate ID: <strong>${data.certificate_number}</strong></p>
+        <button class="btn btn-primary btn-block" style="margin-top:14px" onclick="window.print()"><i class="fas fa-download"></i> Download / Print Certificate</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function markAllRead() {
+  try {
+    await API.put('/notifications/read-all', {});
+    notifications.forEach(n=>n.is_read=true);
+    document.getElementById('notifBadge').style.display='none';
+    renderNotifications();
+    showToast('All notifications marked as read', 'success');
+  } catch(e) { showToast('Done', 'info'); document.getElementById('notifBadge').style.display='none'; }
+}
+
+// CHATBOT
+function toggleChatbot() {
+  document.getElementById('chatbotWindow').classList.toggle('open');
+  if (document.getElementById('chatbotWindow').classList.contains('open')) {
+    document.getElementById('chatInput').focus();
+  }
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  const msgs = document.getElementById('chatMessages');
+  msgs.innerHTML += `<div class="chat-msg user">${msg}</div>`;
+  msgs.innerHTML += `<div class="chat-msg bot" id="typing"><i class="fas fa-ellipsis-h"></i> Typing...</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+  try {
+    const data = await API.post('/messages', { message: msg });
+    document.getElementById('typing').remove();
+    msgs.innerHTML += `<div class="chat-msg bot">${data.reply}</div>`;
+  } catch(e) {
+    document.getElementById('typing').remove();
+    msgs.innerHTML += `<div class="chat-msg bot">Sorry, I'm having trouble connecting. Please try again!</div>`;
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// SECTION NAVIGATION
+function showSection(name, el) {
+  document.querySelectorAll('[id^="sec-"]').forEach(s=>s.style.display='none');
+  const sec = document.getElementById('sec-'+name);
+  if (sec) sec.style.display = 'block';
+  document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.remove('active'));
+  if (el) el.classList.add('active');
+  if (name === 'profile') renderProfile();
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+document.addEventListener('DOMContentLoaded', initDashboard);
+</script>
+</body>
+</html>

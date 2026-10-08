@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Course Detail — EduVerse</title>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .course-hero { background:var(--bg-2); border-bottom:1px solid var(--border); padding:calc(var(--nav-h)+32px) 24px 0; }
+    .course-hero-inner { max-width:1280px; margin:0 auto; display:grid; grid-template-columns:1fr 360px; gap:40px; align-items:start; }
+    .course-hero-left { padding-bottom:32px; }
+    .breadcrumb { display:flex; align-items:center; gap:8px; font-size:0.82rem; color:var(--text-muted); margin-bottom:16px; }
+    .breadcrumb a { color:var(--primary-light); }
+    .breadcrumb i { font-size:0.7rem; }
+    .course-hero-title { font-family:var(--font-display); font-size:2rem; font-weight:700; line-height:1.3; margin-bottom:14px; }
+    .course-hero-desc { color:var(--text-secondary); line-height:1.7; margin-bottom:20px; }
+    .course-hero-meta { display:flex; flex-wrap:wrap; gap:16px; font-size:0.88rem; color:var(--text-secondary); }
+    .course-hero-meta span { display:flex; align-items:center; gap:5px; }
+    .enroll-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-xl); overflow:hidden; position:sticky; top:calc(var(--nav-h)+16px); }
+    .enroll-thumbnail { height:200px; display:flex; align-items:center; justify-content:center; font-size:5rem; }
+    .enroll-body { padding:22px; }
+    .enroll-price { font-family:var(--font-display); font-size:2rem; font-weight:700; margin-bottom:4px; }
+    .enroll-price.free { color:var(--success); }
+    .enroll-features { list-style:none; margin:16px 0; }
+    .enroll-features li { display:flex; align-items:center; gap:8px; padding:5px 0; font-size:0.85rem; color:var(--text-secondary); }
+    .enroll-features li i { color:var(--success); width:16px; }
+    .course-tabs-bar { max-width:1280px; margin:0 auto; padding:0 24px; border-bottom:1px solid var(--border); }
+    .course-tab { display:inline-block; padding:14px 20px; font-size:0.9rem; font-weight:600; color:var(--text-muted); border-bottom:2px solid transparent; cursor:pointer; transition:all 0.2s; margin-bottom:-1px; }
+    .course-tab.active { color:var(--primary-light); border-bottom-color:var(--primary); }
+    .course-body { max-width:1280px; margin:0 auto; padding:32px 24px; display:grid; grid-template-columns:1fr 360px; gap:40px; }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+    .learn-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:24px; }
+    .learn-item { display:flex; align-items:flex-start; gap:8px; font-size:0.87rem; color:var(--text-secondary); }
+    .learn-item i { color:var(--success); margin-top:2px; flex-shrink:0; }
+    .syllabus-item { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 16px; margin-bottom:8px; display:flex; align-items:center; gap:12px; cursor:pointer; transition:all 0.2s; }
+    .syllabus-item:hover { background:rgba(79,70,229,0.08); border-color:rgba(79,70,229,0.3); }
+    .syllabus-num { width:28px;height:28px;border-radius:50%;background:rgba(79,70,229,0.2);color:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:700;flex-shrink:0; }
+    .video-grid { display:grid; gap:12px; }
+    .video-card { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; display:flex; align-items:center; gap:16px; cursor:pointer; transition:all 0.2s; }
+    .video-card:hover { border-color:var(--primary); background:rgba(79,70,229,0.06); }
+    .video-play { width:44px;height:44px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem;flex-shrink:0; }
+    .note-card { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; display:flex; align-items:center; gap:16px; transition:all 0.2s; }
+    .note-card:hover { border-color:var(--primary); }
+    .note-icon { width:44px;height:44px;border-radius:10px;background:rgba(239,68,68,0.15);display:flex;align-items:center;justify-content:center;color:#FCA5A5;font-size:1.2rem;flex-shrink:0; }
+    .instructor-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:24px; margin-bottom:20px; }
+    .instructor-top { display:flex; align-items:center; gap:16px; margin-bottom:14px; }
+    .instructor-avatar { width:60px;height:60px;border-radius:50%;background:var(--gradient-primary);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;flex-shrink:0; }
+    .review-card { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; margin-bottom:10px; }
+    @media(max-width:1000px){ .course-hero-inner,.course-body{grid-template-columns:1fr} .enroll-card{position:relative;top:0} }
+    @media(max-width:600px){ .learn-grid{grid-template-columns:1fr} .course-hero-title{font-size:1.5rem} }
+  </style>
+</head>
+<body>
+<nav class="navbar scrolled" id="navbar">
+  <div class="nav-container">
+    <a href="/" class="nav-logo"><div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>EduVerse</a>
+    <div class="nav-links">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/pages/courses.html" class="nav-link active">Courses</a>
+      <a href="#" class="nav-link" id="navDashLink" style="display:none"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+    </div>
+    <div class="nav-actions">
+      <a href="/pages/login.html" class="btn btn-ghost btn-sm" id="navLoginLink">Log In</a>
+      <a href="/pages/register.html" class="btn btn-primary btn-sm" id="navRegisterLink">Get Started</a>
+      <div id="navUserArea" style="display:none;align-items:center;gap:10px">
+        <div class="nav-avatar" id="navAvatarEl">U</div>
+        <span id="navNameEl" style="font-size:0.88rem;font-weight:600"></span>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="navLogoutBtn" style="display:none" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO SKELETON -->
+<div class="course-hero" id="courseHero">
+  <div class="course-hero-inner">
+    <div class="course-hero-left" id="heroLeft">
+      <div class="skeleton" style="height:24px;width:200px;margin-bottom:16px;border-radius:6px"></div>
+      <div class="skeleton" style="height:48px;margin-bottom:12px;border-radius:8px"></div>
+      <div class="skeleton" style="height:80px;margin-bottom:20px;border-radius:8px"></div>
+    </div>
+    <div id="heroRight">
+      <div class="enroll-card">
+        <div class="skeleton" style="height:200px;border-radius:0"></div>
+        <div style="padding:22px"><div class="skeleton" style="height:80px;border-radius:8px"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TABS BAR -->
+<div class="course-tabs-bar">
+  <span class="course-tab active" onclick="showTab('overview',this)">Overview</span>
+  <span class="course-tab" onclick="showTab('syllabus',this)">Syllabus</span>
+  <span class="course-tab" onclick="showTab('videos',this)">Videos</span>
+  <span class="course-tab" onclick="showTab('notes',this)">Notes</span>
+  <span class="course-tab" onclick="showTab('quiz',this)">Quizzes</span>
+</div>
+
+<div class="course-body">
+  <div>
+    <!-- OVERVIEW TAB -->
+    <div class="tab-content active" id="tab-overview">
+      <h3 style="margin-bottom:16px;font-size:1.1rem">What You'll Learn</h3>
+      <div class="learn-grid" id="learnGrid"></div>
+      <h3 style="margin-bottom:16px;font-size:1.1rem">About This Course</h3>
+      <p id="courseFullDesc" style="color:var(--text-secondary);line-height:1.8;margin-bottom:24px"></p>
+      <h3 style="margin-bottom:16px;font-size:1.1rem">Requirements</h3>
+      <ul id="requirementsList" style="color:var(--text-secondary);padding-left:0;list-style:none"></ul>
+      <div class="instructor-card" id="instructorCard" style="margin-top:28px"></div>
+    </div>
+
+    <!-- SYLLABUS TAB -->
+    <div class="tab-content" id="tab-syllabus">
+      <h3 style="margin-bottom:16px;font-size:1.1rem">Course Syllabus</h3>
+      <div id="syllabusItems"></div>
+    </div>
+
+    <!-- VIDEOS TAB -->
+    <div class="tab-content" id="tab-videos">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h3 style="font-size:1.1rem">Video Lectures</h3>
+      </div>
+      <div class="video-grid" id="videoGrid">
+        <div class="alert alert-info"><i class="fas fa-info-circle"></i> Enroll in this course to access all video lectures.</div>
+      </div>
+    </div>
+
+    <!-- NOTES TAB -->
+    <div class="tab-content" id="tab-notes">
+      <h3 style="margin-bottom:16px;font-size:1.1rem">Study Materials & Notes</h3>
+      <div id="notesGrid">
+        <div class="alert alert-info"><i class="fas fa-info-circle"></i> Enroll to download study notes and materials.</div>
+      </div>
+    </div>
+
+    <!-- QUIZ TAB -->
+    <div class="tab-content" id="tab-quiz">
+      <h3 style="margin-bottom:16px;font-size:1.1rem">Available Quizzes</h3>
+      <div id="quizList">
+        <div class="alert alert-info"><i class="fas fa-info-circle"></i> Quizzes will appear here after enrollment.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ASIDE -->
+  <aside id="courseAside">
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px" id="liveClassAside">
+      <h4 style="margin-bottom:14px;font-size:0.9rem;font-weight:700"><i class="fas fa-video" style="color:var(--primary-light)"></i> Upcoming Live Classes</h4>
+      <div id="liveClassList"><div class="skeleton" style="height:60px;border-radius:8px"></div></div>
+    </div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px">
+      <h4 style="margin-bottom:14px;font-size:0.9rem;font-weight:700"><i class="fas fa-tasks" style="color:var(--warning)"></i> Quick Stats</h4>
+      <div id="quickStats"></div>
+    </div>
+  </aside>
+</div>
+
+<!-- VIDEO MODAL -->
+<div class="modal-overlay" id="videoModal">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header">
+      <h3 id="videoModalTitle">Video Lecture</h3>
+      <button class="modal-close" onclick="closeModal('videoModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" style="padding:0">
+      <div style="background:#000;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;color:var(--text-muted)" id="videoPlayer">
+        <div style="text-align:center"><i class="fas fa-play-circle" style="font-size:4rem;color:var(--primary-light);margin-bottom:16px;display:block"></i><p>Video player</p><p style="font-size:0.8rem;margin-top:6px">In production, embed video URL here</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+const courseId = new URLSearchParams(window.location.search).get('id');
+let courseData = null;
+let isEnrolled = false;
+
+const COURSE_EMOJIS = {'Web Development':'🌐','Data Science':'📊','Mobile Development':'📱','Cloud Computing':'☁️','Cybersecurity':'🔒','UI/UX Design':'🎨','Digital Marketing':'📣','Business & Management':'💼','Programming Languages':'💻','Database Management':'🗄️'};
+
+async function loadCourse() {
+  if (!courseId) { window.location.href = '/pages/courses.html'; return; }
+  try {
+    courseData = await API.get(`/courses/${courseId}`);
+    const enrolled = getEnrolledIds();
+    isEnrolled = enrolled.includes(parseInt(courseId));
+    renderHero();
+    renderOverview();
+    renderSyllabus();
+    renderVideos();
+    renderNotes();
+    renderQuizzes();
+    renderLiveClasses();
+  } catch(e) { showToast('Course not found', 'error'); }
+}
+
+function renderHero() {
+  const c = courseData;
+  const emoji = COURSE_EMOJIS[c.category_name] || '📚';
+  const color = c.category_color || '#4F46E5';
+  document.title = `${c.title} — EduVerse`;
+
+  document.getElementById('heroLeft').innerHTML = `
+    <div class="breadcrumb">
+      <a href="/">Home</a><i class="fas fa-chevron-right"></i>
+      <a href="/pages/courses.html">Courses</a><i class="fas fa-chevron-right"></i>
+      <a href="/pages/courses.html?cat=${c.slug || ''}">${c.category_name||'Course'}</a>
+    </div>
+    <div style="margin-bottom:12px"><span class="badge badge-primary"><i class="${c.category_icon||'fas fa-book'}"></i> ${c.category_name||'Course'}</span>
+    &nbsp;<span class="badge ${c.level==='Beginner'?'badge-success':c.level==='Advanced'?'badge-danger':'badge-warning'}">${c.level}</span></div>
+    <h1 class="course-hero-title">${c.title}</h1>
+    <p class="course-hero-desc">${c.description||''}</p>
+    <div class="course-hero-meta">
+      <span><i class="fas fa-star" style="color:#FBBF24"></i> ${parseFloat(c.rating||4.5).toFixed(1)} Rating</span>
+      <span><i class="fas fa-users"></i> ${(c.enrolled_count||0).toLocaleString()} Students</span>
+      <span><i class="fas fa-clock"></i> ${c.duration_hours||0} Hours</span>
+      <span><i class="fas fa-language"></i> English</span>
+      <span><i class="fas fa-user-tie"></i> ${c.instructor_name||'EduVerse Instructor'}</span>
+    </div>`;
+
+  document.getElementById('heroRight').innerHTML = `
+    <div class="enroll-card">
+      <div class="enroll-thumbnail" style="background:linear-gradient(135deg,${color}44,${color}22)">${emoji}</div>
+      <div class="enroll-body">
+        <div class="enroll-price ${!c.price||c.price==0?'free':''}">${!c.price||c.price==0?'FREE':'₹'+parseFloat(c.price).toLocaleString('en-IN')}</div>
+        ${c.price>0?'<p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:12px">One-time payment • Lifetime access</p>':''}
+        ${isEnrolled
+          ? `<button class="btn btn-success btn-block btn-lg" onclick="window.location.href='/pages/dashboard.html'"><i class="fas fa-play-circle"></i> Continue Learning</button>
+             <p style="text-align:center;font-size:0.78rem;color:var(--success);margin-top:8px"><i class="fas fa-check-circle"></i> You're enrolled!</p>`
+          : `<button class="btn btn-primary btn-block btn-lg" onclick="handleEnroll(${c.id})" id="enrollBtn"><i class="fas fa-bolt"></i> Enroll Now</button>
+             <p style="text-align:center;font-size:0.78rem;color:var(--text-muted);margin-top:8px">30-day money-back guarantee</p>`}
+        <ul class="enroll-features">
+          <li><i class="fas fa-check"></i> ${c.duration_hours||0}+ hours of content</li>
+          <li><i class="fas fa-check"></i> Live classes on Zoom</li>
+          <li><i class="fas fa-check"></i> Downloadable notes & PDFs</li>
+          <li><i class="fas fa-check"></i> Online quizzes & tests</li>
+          <li><i class="fas fa-check"></i> Certificate of completion</li>
+          <li><i class="fas fa-check"></i> Lifetime access</li>
+        </ul>
+      </div>
+    </div>`;
+
+  document.getElementById('quickStats').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      ${[
+        ['fa-clock','Duration',`${c.duration_hours||0}h`,'rgba(79,70,229,0.2)','#818CF8'],
+        ['fa-signal','Level',c.level||'Beginner','rgba(16,185,129,0.2)','#34D399'],
+        ['fa-star','Rating',`${parseFloat(c.rating||4.5).toFixed(1)}★`,'rgba(245,158,11,0.2)','#FCD34D'],
+        ['fa-users','Students',(c.enrolled_count||0).toLocaleString(),'rgba(6,182,212,0.2)','#67E8F9']
+      ].map(([icon,label,val,bg,color])=>`
+        <div style="background:${bg};border-radius:10px;padding:12px;text-align:center">
+          <i class="fas ${icon}" style="color:${color};margin-bottom:6px;display:block"></i>
+          <div style="font-weight:700;font-size:0.95rem">${val}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted)">${label}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderOverview() {
+  const c = courseData;
+  const learns = Array.isArray(c.what_you_learn) ? c.what_you_learn : ['Core fundamentals','Practical projects','Best practices','Real-world applications','Interview prep','Industry tools'];
+  document.getElementById('learnGrid').innerHTML = learns.map(l=>`<div class="learn-item"><i class="fas fa-check-circle"></i>${l}</div>`).join('');
+  document.getElementById('courseFullDesc').textContent = c.description || 'This comprehensive course covers everything you need to know, from fundamentals to advanced topics, with hands-on projects and expert guidance.';
+  const reqs = Array.isArray(c.requirements) ? c.requirements : ['Basic computer knowledge','Internet connection','Dedication to learn'];
+  document.getElementById('requirementsList').innerHTML = reqs.map(r=>`<li style="display:flex;align-items:flex-start;gap:8px;padding:5px 0"><i class="fas fa-dot-circle" style="color:var(--primary-light);margin-top:3px;font-size:0.8rem"></i>${r}</li>`).join('');
+  const name = c.instructor_name || 'EduVerse Instructor';
+  document.getElementById('instructorCard').innerHTML = `
+    <div class="instructor-top">
+      <div class="instructor-avatar">${name[0]}</div>
+      <div><h3 style="font-size:1rem;font-weight:700">${name}</h3><p style="font-size:0.82rem;color:var(--text-muted)">Expert Instructor • EduVerse</p></div>
+    </div>
+    <p style="font-size:0.87rem;color:var(--text-secondary);line-height:1.7">An experienced educator with deep expertise in ${c.category_name||'this subject'}. Passionate about making complex topics easy to understand with real-world examples and projects.</p>`;
+}
+
+function renderSyllabus() {
+  const c = courseData;
+  const syllabus = Array.isArray(c.syllabus) ? c.syllabus : [
+    'Module 1: Introduction & Setup','Module 2: Core Fundamentals','Module 3: Intermediate Concepts',
+    'Module 4: Advanced Topics','Module 5: Real-world Projects','Module 6: Best Practices','Module 7: Final Assessment'
+  ];
+  document.getElementById('syllabusItems').innerHTML = syllabus.map((s,i)=>`
+    <div class="syllabus-item">
+      <div class="syllabus-num">${i+1}</div>
+      <span style="flex:1;font-size:0.9rem">${s}</span>
+      <i class="fas fa-play-circle" style="color:var(--primary-light)"></i>
+    </div>`).join('');
+}
+
+function renderVideos() {
+  const videos = courseData.videos || [];
+  if (!videos.length) { return; }
+  document.getElementById('videoGrid').innerHTML = videos.map(v=>`
+    <div class="video-card" onclick="playVideo('${v.video_url||''}','${v.title}')">
+      <div class="video-play"><i class="fas fa-play"></i></div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:0.9rem;margin-bottom:3px">${v.title}</div>
+        <div style="font-size:0.78rem;color:var(--text-muted)">${v.duration_minutes||0} min ${v.is_live_recording?'• <span class="badge badge-success">Recording</span>':''}</div>
+      </div>
+      <i class="fas fa-lock" style="color:var(--text-muted);font-size:0.9rem" title="Enrolled access"></i>
+    </div>`).join('');
+}
+
+function renderNotes() {
+  const notes = courseData.notes || [];
+  if (!notes.length) return;
+  document.getElementById('notesGrid').innerHTML = notes.map(n=>`
+    <div class="note-card">
+      <div class="note-icon"><i class="fas fa-file-pdf"></i></div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:0.9rem;margin-bottom:2px">${n.title}</div>
+        <div style="font-size:0.78rem;color:var(--text-muted)">${n.description||'Study Material'} • ${n.file_size||'PDF'}</div>
+      </div>
+      <a href="${n.file_url||'#'}" class="btn btn-secondary btn-sm" download><i class="fas fa-download"></i></a>
+    </div>`).join('');
+}
+
+function renderQuizzes() {
+  const quizzes = courseData.quizzes || [];
+  if (!quizzes.length) return;
+  document.getElementById('quizList').innerHTML = quizzes.map(q=>`
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:18px;margin-bottom:10px;display:flex;align-items:center;gap:16px">
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">📝</div>
+      <div style="flex:1">
+        <div style="font-weight:700;margin-bottom:3px">${q.title}</div>
+        <div style="font-size:0.78rem;color:var(--text-muted)">${q.duration_minutes} min • Pass: ${q.pass_percent}% • ${q.total_marks} marks</div>
+      </div>
+      <a href="/pages/quiz.html?id=${q.id}" class="btn btn-primary btn-sm"><i class="fas fa-pencil-alt"></i> Take Quiz</a>
+    </div>`).join('');
+}
+
+async function renderLiveClasses() {
+  try {
+    const classes = await API.get('/live-classes');
+    const course_classes = classes.filter(lc => lc.course_id == courseId);
+    const el = document.getElementById('liveClassList');
+    if (!course_classes.length) { el.innerHTML = '<p style="font-size:0.82rem;color:var(--text-muted)">No live classes scheduled yet</p>'; return; }
+    el.innerHTML = course_classes.slice(0,3).map(lc=>`
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px">
+        <div style="font-weight:600;font-size:0.85rem;margin-bottom:4px">${lc.title}</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px"><i class="fas fa-calendar"></i> ${formatDateTime(lc.scheduled_at)}</div>
+        ${getLiveStatus(lc.status)}
+        ${lc.status==='scheduled'||lc.status==='live' ? `<a href="${lc.zoom_link||'#'}" target="_blank" class="btn btn-primary btn-sm" style="margin-top:8px;width:100%;justify-content:center"><i class="fas fa-video"></i> Join</a>` : ''}
+      </div>`).join('');
+  } catch(e) { document.getElementById('liveClassList').innerHTML = '<p style="font-size:0.82rem;color:var(--text-muted)">Unable to load classes</p>'; }
+}
+
+function showTab(tab, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.course-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  el.classList.add('active');
+}
+
+function playVideo(url, title) {
+  document.getElementById('videoModalTitle').textContent = title;
+  openModal('videoModal');
+}
+
+loadCourse();
+</script>
+</body>
+</html>

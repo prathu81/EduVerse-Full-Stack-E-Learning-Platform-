@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — EduVerse</title>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    body { display:flex; min-height:100vh; }
+    .auth-left {
+      flex:1; background:linear-gradient(135deg,#030712,#0D1035,#030712);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      padding:40px; position:relative; overflow:hidden;
+    }
+    .auth-left::before { content:''; position:absolute; width:500px;height:500px; background:radial-gradient(circle,rgba(79,70,229,0.25),transparent 70%); top:-100px;right:-100px; animation:float 8s ease-in-out infinite; }
+    .auth-left::after { content:''; position:absolute; width:400px;height:400px; background:radial-gradient(circle,rgba(124,58,237,0.2),transparent 70%); bottom:-50px;left:-50px; animation:float 10s ease-in-out infinite reverse; }
+    .auth-left-content { position:relative;z-index:1;text-align:center;max-width:420px; }
+    .auth-left h2 { font-family:var(--font-display); font-size:2rem; margin:24px 0 12px; }
+    .auth-left p { color:var(--text-secondary); line-height:1.7; margin-bottom:32px; }
+    .auth-perks { display:flex; flex-direction:column; gap:14px; text-align:left; }
+    .auth-perk { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
+    .auth-perk-icon { width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0; }
+    .auth-perk-text strong { font-size:0.9rem; display:block; }
+    .auth-perk-text span { font-size:0.78rem; color:var(--text-muted); }
+    .auth-right { width:480px; flex-shrink:0; display:flex; flex-direction:column; justify-content:center; padding:40px; background:var(--bg-card); }
+    .auth-right .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-weight:700; font-size:1.1rem; margin-bottom:36px; color:var(--text-primary); text-decoration:none; }
+    .auth-right h1 { font-family:var(--font-display); font-size:1.6rem; margin-bottom:6px; }
+    .auth-right .subtitle { color:var(--text-muted); font-size:0.9rem; margin-bottom:28px; }
+    .demo-creds { background:rgba(79,70,229,0.08); border:1px solid rgba(79,70,229,0.2); border-radius:12px; padding:14px 16px; margin-bottom:20px; }
+    .demo-creds p { font-size:0.78rem; color:var(--text-muted); margin-bottom:8px; font-weight:600; }
+    .demo-btn { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:8px; background:rgba(255,255,255,0.04); cursor:pointer; font-size:0.82rem; transition:all 0.2s; margin-bottom:6px; }
+    .demo-btn:hover { background:rgba(79,70,229,0.15); }
+    .demo-btn:last-child { margin-bottom:0; }
+    .divider { display:flex; align-items:center; gap:12px; margin:20px 0; color:var(--text-muted); font-size:0.82rem; }
+    .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
+    @media(max-width:900px){ .auth-left{display:none} .auth-right{width:100%;min-height:100vh} }
+  </style>
+</head>
+<body>
+  <div class="auth-left">
+    <div class="auth-left-content">
+      <div style="font-size:3.5rem">🎓</div>
+      <h2>Welcome Back!</h2>
+      <p>Login to access your courses, live classes, quiz results, and certificates.</p>
+      <div class="auth-perks">
+        <div class="auth-perk">
+          <div class="auth-perk-icon" style="background:rgba(79,70,229,0.2);color:#818CF8"><i class="fas fa-video"></i></div>
+          <div class="auth-perk-text"><strong>Live Classes</strong><span>Join expert-led Zoom sessions</span></div>
+        </div>
+        <div class="auth-perk">
+          <div class="auth-perk-icon" style="background:rgba(16,185,129,0.2);color:#34D399"><i class="fas fa-certificate"></i></div>
+          <div class="auth-perk-text"><strong>Certificates</strong><span>Download your achievements</span></div>
+        </div>
+        <div class="auth-perk">
+          <div class="auth-perk-icon" style="background:rgba(245,158,11,0.2);color:#FCD34D"><i class="fas fa-tasks"></i></div>
+          <div class="auth-perk-text"><strong>Quizzes & Tracking</strong><span>Monitor your progress daily</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <a href="/" class="logo"><div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>EduVerse</a>
+    <h1>Sign In</h1>
+    <p class="subtitle">Don't have an account? <a href="/pages/register.html" style="color:var(--primary-light)">Register here</a></p>
+
+    <div class="demo-creds">
+      <p><i class="fas fa-key"></i> Demo Credentials (click to fill)</p>
+      <div class="demo-btn" onclick="fillDemo('admin@elearn.com','Admin@123')">
+        <span><i class="fas fa-user-shield" style="color:#818CF8;margin-right:6px"></i> Admin</span>
+        <span style="color:var(--text-muted)">admin@elearn.com / Admin@123</span>
+      </div>
+      <div class="demo-btn" onclick="fillDemo('student@demo.com','Student@123')">
+        <span><i class="fas fa-user-graduate" style="color:#34D399;margin-right:6px"></i> Student</span>
+        <span style="color:var(--text-muted)">student@demo.com / Student@123</span>
+      </div>
+    </div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <div class="input-group">
+          <i class="fas fa-envelope input-icon"></i>
+          <input type="email" class="form-control" id="email" placeholder="Enter your email" required/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="display:flex;justify-content:space-between"><span>Password</span><a href="#" style="color:var(--primary-light);font-size:0.82rem">Forgot password?</a></label>
+        <div class="input-group">
+          <i class="fas fa-lock input-icon"></i>
+          <input type="password" class="form-control" id="password" placeholder="Enter your password" required/>
+          <i class="fas fa-eye input-icon-right" onclick="togglePwd()" id="eyeIcon"></i>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
+        <input type="checkbox" id="remember" style="accent-color:var(--primary);width:16px;height:16px"/>
+        <label for="remember" style="font-size:0.85rem;color:var(--text-secondary)">Remember me</label>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg" id="loginBtn">
+        <i class="fas fa-sign-in-alt"></i> Sign In
+      </button>
+    </form>
+
+    <div class="divider">or</div>
+    <p style="text-align:center;font-size:0.88rem;color:var(--text-muted)">New to EduVerse? <a href="/pages/register.html" style="color:var(--primary-light);font-weight:600">Create a free account →</a></p>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    if (API.isLoggedIn()) {
+      window.location.href = API.isAdmin() ? '/pages/admin-dashboard.html' : '/pages/dashboard.html';
+    }
+
+    function fillDemo(email, password) {
+      document.getElementById('email').value = email;
+      document.getElementById('password').value = password;
+    }
+
+    function togglePwd() {
+      const pwd = document.getElementById('password');
+      const icon = document.getElementById('eyeIcon');
+      if (pwd.type === 'password') { pwd.type = 'text'; icon.className = 'fas fa-eye-slash input-icon-right'; }
+      else { pwd.type = 'password'; icon.className = 'fas fa-eye input-icon-right'; }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+      try {
+        const data = await API.post('/auth/login', { email, password });
+        API.setAuth(data.token, data.user);
+        showToast('Welcome back, ' + data.user.full_name + '! 👋', 'success');
+        const params = new URLSearchParams(window.location.search);
+        const redirect = params.get('redirect');
+        setTimeout(() => {
+          if (redirect) { window.location.href = redirect; return; }
+          window.location.href = data.user.role === 'admin' ? '/pages/admin-dashboard.html' : '/pages/dashboard.html';
+        }, 800);
+      } catch(e) {
+        showToast(e.message || 'Login failed', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register — EduVerse</title>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    body { background:var(--bg-2); }
+    .register-wrapper { max-width:720px; margin:0 auto; padding:calc(var(--nav-h) + 40px) 24px 60px; }
+    .register-header { text-align:center; margin-bottom:36px; }
+    .role-selector { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:32px; }
+    .role-card { border:2px solid var(--border); border-radius:var(--radius-md); padding:20px; cursor:pointer; transition:all 0.2s; text-align:center; background:var(--bg-card); }
+    .role-card:hover { border-color:rgba(79,70,229,0.5); }
+    .role-card.active { border-color:var(--primary); background:rgba(79,70,229,0.1); }
+    .role-card .role-icon { font-size:2rem; margin-bottom:10px; }
+    .role-card h3 { font-size:0.95rem; font-weight:700; margin-bottom:4px; }
+    .role-card p { font-size:0.78rem; color:var(--text-muted); }
+    .form-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-xl); padding:32px; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .form-grid .full { grid-column:1/-1; }
+    .step-indicator { display:flex; align-items:center; gap:0; margin-bottom:28px; }
+    .step { display:flex; align-items:center; gap:8px; font-size:0.82rem; font-weight:600; color:var(--text-muted); }
+    .step.active { color:var(--primary-light); }
+    .step.done { color:var(--success); }
+    .step-num { width:28px;height:28px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0; }
+    .step-line { flex:1; height:1px; background:var(--border); margin:0 10px; }
+    @media(max-width:600px){ .form-grid{grid-template-columns:1fr} .form-grid .full{grid-column:1} .role-selector{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo"><div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>EduVerse</a>
+      <div class="nav-actions" style="margin-left:auto">
+        <a href="/pages/login.html" class="btn btn-ghost btn-sm">Already registered? <strong>Login</strong></a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="register-wrapper">
+    <div class="register-header">
+      <h1 style="font-family:var(--font-display);font-size:2rem;margin-bottom:8px">Create Your Account</h1>
+      <p style="color:var(--text-muted)">Join EduVerse and start your learning journey today</p>
+    </div>
+
+    <!-- Role Selector -->
+    <div class="role-selector">
+      <div class="role-card active" id="studentRole" onclick="selectRole('student')">
+        <div class="role-icon">🎓</div>
+        <h3>I'm a Student</h3>
+        <p>Access courses, live classes, quizzes and certificates</p>
+      </div>
+      <div class="role-card" id="adminRole" onclick="selectRole('admin')">
+        <div class="role-icon">👨‍💼</div>
+        <h3>I'm an Admin/Instructor</h3>
+        <p>Manage courses, students, quizzes and content</p>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <form id="registerForm" onsubmit="handleRegister(event)" enctype="multipart/form-data">
+        <input type="hidden" id="roleInput" name="role" value="student"/>
+
+        <!-- Common Fields -->
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Full Name <span class="required">*</span></label>
+            <div class="input-group">
+              <i class="fas fa-user input-icon"></i>
+              <input type="text" class="form-control" name="full_name" placeholder="Your full name" required/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address <span class="required">*</span></label>
+            <div class="input-group">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" class="form-control" name="email" placeholder="your@email.com" required/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password <span class="required">*</span></label>
+            <div class="input-group">
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" class="form-control" id="pwdInput" name="password" placeholder="Min 6 characters" required minlength="6"/>
+              <i class="fas fa-eye input-icon-right" onclick="togglePwd('pwdInput','eyeIconReg');" id="eyeIconReg"></i>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm Password <span class="required">*</span></label>
+            <div class="input-group">
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" class="form-control" id="confirmPwd" placeholder="Repeat password" required/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number <span class="required">*</span></label>
+            <div class="input-group">
+              <i class="fas fa-phone input-icon"></i>
+              <input type="tel" class="form-control" name="phone" placeholder="10-digit mobile number" required pattern="[0-9]{10}"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Educational Qualification</label>
+            <select class="form-control" name="qualification">
+              <option value="">Select qualification</option>
+              <option>10th Standard</option>
+              <option>12th Standard</option>
+              <option>Diploma</option>
+              <option>B.Tech / B.E.</option>
+              <option>B.Sc / B.Com / B.A.</option>
+              <option>MCA / M.Tech</option>
+              <option>MBA</option>
+              <option>PhD</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Address</label>
+            <textarea class="form-control" name="address" rows="2" placeholder="Your current address"></textarea>
+          </div>
+        </div>
+
+        <!-- Student-only Fields -->
+        <div id="studentFields">
+          <hr style="border-color:var(--border);margin:4px 0 18px"/>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Parent Phone Number <span class="required">*</span></label>
+              <div class="input-group">
+                <i class="fas fa-phone-alt input-icon"></i>
+                <input type="tel" class="form-control" id="parentPhone" name="parent_phone" placeholder="Parent's mobile number" pattern="[0-9]{10}"/>
+              </div>
+              <div class="form-hint">Required for parent notifications</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Interested Course</label>
+              <select class="form-control" name="interested_course" id="courseDropdown">
+                <option value="">Select a course...</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Profile Photo</label>
+              <div class="photo-upload-area" onclick="document.getElementById('photoInput').click()" id="photoArea">
+                <img class="photo-preview" id="photoPreview" src="" alt="Preview"/>
+                <i class="fas fa-camera" style="font-size:1.8rem;color:var(--primary-light);margin-bottom:8px;display:block" id="photoIcon"></i>
+                <p style="font-size:0.9rem;color:var(--text-secondary)">Click to upload photo</p>
+                <span style="font-size:0.78rem;color:var(--text-muted)">JPG, PNG • Max 5MB</span>
+                <input type="file" id="photoInput" name="photo" accept="image/*" style="display:none" onchange="previewPhoto(this)"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin-only Fields -->
+        <div id="adminFields" style="display:none">
+          <hr style="border-color:var(--border);margin:4px 0 18px"/>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Teaching Experience</label>
+              <select class="form-control" name="experience">
+                <option value="">Select experience</option>
+                <option>0-1 years</option>
+                <option>1-3 years</option>
+                <option>3-5 years</option>
+                <option>5-10 years</option>
+                <option>10+ years</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Specialization / Subject</label>
+              <input type="text" class="form-control" name="specialization" placeholder="e.g. Python, Web Development"/>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:8px;display:flex;align-items:flex-start;gap:10px;margin-bottom:20px">
+          <input type="checkbox" id="terms" required style="accent-color:var(--primary);width:16px;height:16px;margin-top:2px;flex-shrink:0"/>
+          <label for="terms" style="font-size:0.85rem;color:var(--text-secondary)">I agree to the <a href="#" style="color:var(--primary-light)">Terms of Service</a> and <a href="#" style="color:var(--primary-light)">Privacy Policy</a></label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="registerBtn">
+          <i class="fas fa-user-plus"></i> Create Account
+        </button>
+        <p style="text-align:center;margin-top:16px;font-size:0.88rem;color:var(--text-muted)">
+          Already have an account? <a href="/pages/login.html" style="color:var(--primary-light);font-weight:600">Sign in →</a>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('role') === 'admin') selectRole('admin');
+
+    let selectedRole = 'student';
+
+    function selectRole(role) {
+      selectedRole = role;
+      document.getElementById('roleInput').value = role;
+      document.getElementById('studentRole').classList.toggle('active', role === 'student');
+      document.getElementById('adminRole').classList.toggle('active', role === 'admin');
+      document.getElementById('studentFields').style.display = role === 'student' ? 'block' : 'none';
+      document.getElementById('adminFields').style.display = role === 'admin' ? 'block' : 'none';
+      const parentPhone = document.getElementById('parentPhone');
+      if (parentPhone) parentPhone.required = (role === 'student');
+    }
+
+    function togglePwd(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input.type === 'password') { input.type = 'text'; icon.className = 'fas fa-eye-slash input-icon-right'; }
+      else { input.type = 'password'; icon.className = 'fas fa-eye input-icon-right'; }
+    }
+
+    function previewPhoto(input) {
+      if (!input.files[0]) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const preview = document.getElementById('photoPreview');
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        document.getElementById('photoIcon').style.display = 'none';
+        document.getElementById('photoArea').classList.add('has-file');
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+
+    async function loadCourses() {
+      try {
+        const data = await API.get('/courses?limit=100&sort=popular');
+        const sel = document.getElementById('courseDropdown');
+        (data.courses||[]).forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id; opt.textContent = c.title;
+          sel.appendChild(opt);
+        });
+      } catch(e) {}
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const pwd = document.getElementById('pwdInput').value;
+      const confirmPwd = document.getElementById('confirmPwd').value;
+      if (pwd !== confirmPwd) { showToast('Passwords do not match', 'error'); return; }
+
+      const btn = document.getElementById('registerBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
+
+      try {
+        const formData = new FormData(document.getElementById('registerForm'));
+        const data = await API.postForm('/auth/register', formData);
+        API.setAuth(data.token, data.user);
+        showToast('Account created successfully! 🎉', 'success');
+        setTimeout(() => {
+          window.location.href = data.user.role === 'admin' ? '/pages/admin-dashboard.html' : '/pages/dashboard.html';
+        }, 1000);
+      } catch(e) {
+        showToast(e.message || 'Registration failed', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+      }
+    }
+
+    loadCourses();
+    window.addEventListener('scroll', () => document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20));
+  </script>
+</body>
+</html>

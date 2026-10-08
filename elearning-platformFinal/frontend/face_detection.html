@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Face Registration</title>
+    <!-- face-api.js library link kara -->
+    <script defer src="face-api.min.js"></script>
+    <style>
+        body { text-align: center; font-family: Arial; margin-top: 50px; }
+        video { border: 2px solid #ccc; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Student Face Registration</h2>
+    
+    <!-- Webcam sathi video tag -->
+    <video id="video" width="640" height="480" autoplay muted></video>
+    <br><br>
+    
+    <!-- Face scan karnyacha button -->
+    <button id="registerBtn" disabled>Register My Face</button>
+    <p id="statusMsg">Loading AI Models... Please wait.</p>
+
+    <script>
+        const video = document.getElementById('video');
+        const registerBtn = document.getElementById('registerBtn');
+        const statusMsg = document.getElementById('statusMsg');
+
+        // Step 1: face-api.js che models load kara (models/ folder madhun)
+        Promise.all([
+            faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
+            faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+            faceapi.nets.faceRecognitionNet.loadFromUri('/models')
+        ]).then(startVideo);
+
+        // Step 2: Webcam chalu kara
+        function startVideo() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    video.srcObject = stream;
+                    statusMsg.innerText = "Models loaded. Please position your face and click Register.";
+                    registerBtn.disabled = false;
+                })
+                .catch(err => console.error("Webcam error:", err));
+        }
+
+        // Step 3: Button click var face detect kara ani descriptor generate kara
+        registerBtn.addEventListener('click', async () => {
+            statusMsg.innerText = "Scanning face...";
+            
+            // Single face detect karun tyacha 128-point descriptor kaddha
+            const detection = await faceapi.detectSingleFace(video)
+                                           .withFaceLandmarks()
+                                           .withFaceDescriptor();
+
+            if (detection) {
+                // Float32Array la regular array madhe convert kara JSON sathi
+                const faceDescriptorArray = Array.from(detection.descriptor);
+                
+                // Backend la data pathva
+                sendToBackend(123, faceDescriptorArray); // 123 ha udaharana sathi studentId ahe
+                
+            } else {
+                statusMsg.innerText = "Face detect zala nahi. Camera kade nit paha.";
+            }
+        });
+
+        // Step 4: Backend la API call kara
+        async function sendToBackend(studentId, descriptor) {
+            try {
+                const response = await fetch('http://localhost:3000/api/register-face', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        studentId: studentId, 
+                        faceDescriptor: descriptor 
+                    })
+                });
+
+                const result = await response.json();
+                if(result.success) {
+                    statusMsg.innerText = "Face registered successfully!";
+                    statusMsg.style.color = "green";
+                } else {
+                    statusMsg.innerText = "Error in registration.";
+                }
+            } catch (error) {
+                console.error("Backend error:", error);
+            }
+        }
+    </script>
+</body>
+</html>

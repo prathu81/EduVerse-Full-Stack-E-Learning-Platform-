@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EduVerse — Learn Without Limits</title>
+  <link rel="stylesheet" href="css/main.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .features-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px; }
+    .feature-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:28px; transition:all 0.25s; }
+    .feature-card:hover { transform:translateY(-4px); border-color:var(--border-2); }
+    .feature-icon { width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:16px; }
+    .feature-card h3 { font-size:1rem; font-weight:700; margin-bottom:8px; }
+    .feature-card p { font-size:0.87rem; color:var(--text-secondary); line-height:1.7; }
+    .testimonials-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+    .testimonial-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:28px; }
+    .testimonial-stars { color:#FBBF24; margin-bottom:14px; }
+    .testimonial-text { color:var(--text-secondary); font-style:italic; margin-bottom:20px; line-height:1.7; }
+    .testimonial-author { display:flex; align-items:center; gap:12px; }
+    .testimonial-avatar { width:44px;height:44px;border-radius:50%;background:var(--gradient-primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem; }
+    .cta-section { background:linear-gradient(135deg,rgba(79,70,229,0.2),rgba(124,58,237,0.15)); border:1px solid rgba(79,70,229,0.25); border-radius:var(--radius-xl); padding:64px 40px; text-align:center; margin:0 24px 80px; }
+    .cta-section h2 { font-family:var(--font-display); font-size:2.2rem; font-weight:700; margin-bottom:12px; }
+    .cta-section p { color:var(--text-secondary); margin-bottom:32px; font-size:1.05rem; }
+    .cta-buttons { display:flex; justify-content:center; gap:14px; flex-wrap:wrap; }
+    .popular-tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
+    .popular-tag { padding:5px 14px; border-radius:50px; background:rgba(255,255,255,0.06); border:1px solid var(--border); font-size:0.78rem; color:var(--text-muted); cursor:pointer; transition:all 0.2s; }
+    .popular-tag:hover { border-color:var(--primary); color:var(--primary-light); }
+    .courses-tabs { display:flex; gap:6px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:0; }
+    .tab-btn { padding:10px 20px; background:none; border:none; color:var(--text-muted); font-size:0.9rem; font-weight:600; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all 0.2s; }
+    .tab-btn.active { color:var(--primary-light); border-bottom-color:var(--primary); }
+    footer { background:var(--bg-card); border-top:1px solid var(--border); padding:40px 24px 20px; }
+    .footer-inner { max-width:1280px; margin:0 auto; display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:40px; }
+    .footer-brand p { color:var(--text-muted); font-size:0.88rem; margin:12px 0 20px; line-height:1.7; }
+    .footer-col h4 { font-size:0.88rem; font-weight:700; margin-bottom:16px; }
+    .footer-col a { display:block; color:var(--text-muted); font-size:0.85rem; margin-bottom:8px; transition:color 0.2s; }
+    .footer-col a:hover { color:var(--primary-light); }
+    .footer-bottom { max-width:1280px; margin:24px auto 0; padding-top:20px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; color:var(--text-muted); }
+    @media(max-width:768px){ .footer-inner{grid-template-columns:1fr 1fr} .footer-brand{grid-column:1/-1} .cta-section{padding:40px 20px} .cta-section h2{font-size:1.6rem} }
+    @media(max-width:480px){ .footer-inner{grid-template-columns:1fr} .footer-bottom{flex-direction:column;gap:8px;text-align:center} }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <a href="/" class="nav-logo">
+      <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+      EduVerse
+    </a>
+    <div class="nav-links">
+      <a href="/" class="nav-link active">Home</a>
+      <a href="/pages/courses.html" class="nav-link">Courses</a>
+      <a href="#features" class="nav-link" onclick="scrollTo('#features')">Features</a>
+      <a href="#" class="nav-link" id="navDashLink" style="display:none"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+    </div>
+    <div class="nav-search">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" placeholder="Search 100+ courses..." id="navSearchInput" onkeydown="if(event.key==='Enter')searchCourses()"/>
+    </div>
+    <div class="nav-actions">
+      <a href="/pages/login.html" class="btn btn-ghost btn-sm" id="navLoginLink">Log In</a>
+      <a href="/pages/register.html" class="btn btn-primary btn-sm" id="navRegisterLink">Get Started</a>
+      <div id="navUserArea" style="display:none;align-items:center;gap:10px">
+        <div class="nav-avatar" id="navAvatarEl" onclick="goToDash()">U</div>
+        <span id="navNameEl" style="font-size:0.88rem;font-weight:600"></span>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="navLogoutBtn" style="display:none" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+    <button class="mobile-menu-btn" onclick="toggleMobileNav()"><i class="fas fa-bars"></i></button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-badge"><i class="fas fa-bolt"></i> #1 Rated E-Learning Platform</div>
+      <h1 class="hero-title">
+        Learn Skills That<br>
+        Shape Your<br>
+        <span class="highlight">Future Career</span>
+      </h1>
+      <p class="hero-subtitle">Access 100+ expert-led courses in tech, design, business and more. Learn at your pace, earn certificates, and land your dream job.</p>
+      <div class="hero-search">
+        <input type="text" id="heroSearch" placeholder="What do you want to learn today?" onkeydown="if(event.key==='Enter')searchCourses()"/>
+        <button onclick="searchCourses()"><i class="fas fa-search"></i> Search</button>
+      </div>
+      <div class="popular-tags">
+        <span class="popular-tag" onclick="quickSearch('Python')">🐍 Python</span>
+        <span class="popular-tag" onclick="quickSearch('React')">⚛️ React</span>
+        <span class="popular-tag" onclick="quickSearch('Machine Learning')">🤖 Machine Learning</span>
+        <span class="popular-tag" onclick="quickSearch('Flutter')">📱 Flutter</span>
+        <span class="popular-tag" onclick="quickSearch('AWS')">☁️ AWS</span>
+        <span class="popular-tag" onclick="quickSearch('UI UX')">🎨 UI/UX</span>
+      </div>
+      <div class="hero-stats" style="margin-top:36px">
+        <div class="hero-stat"><div class="stat-num">100+</div><div class="stat-label">Expert Courses</div></div>
+        <div class="hero-stat"><div class="stat-num">50K+</div><div class="stat-label">Happy Students</div></div>
+        <div class="hero-stat"><div class="stat-num">4.8★</div><div class="stat-label">Average Rating</div></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-cards-grid">
+        <div class="hero-card"><div class="hero-card-icon">🌐</div><h4>Web Development</h4><p>React, Node, MERN</p></div>
+        <div class="hero-card"><div class="hero-card-icon">📊</div><h4>Data Science</h4><p>ML, AI, Python</p></div>
+        <div class="hero-card"><div class="hero-card-icon">📱</div><h4>Mobile Apps</h4><p>Flutter, React Native</p></div>
+        <div class="hero-card"><div class="hero-card-icon">☁️</div><h4>Cloud & DevOps</h4><p>AWS, Docker, K8s</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="section" style="background:var(--bg-2)">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-badge"><i class="fas fa-th"></i> Browse by Category</div>
+      <h2 class="section-title">Explore Course Categories</h2>
+      <p class="section-subtitle">Find courses that match your interests and career goals</p>
+    </div>
+    <div class="categories-grid" id="categoriesGrid">
+      <div class="skeleton" style="height:120px;border-radius:14px"></div>
+      <div class="skeleton" style="height:120px;border-radius:14px"></div>
+      <div class="skeleton" style="height:120px;border-radius:14px"></div>
+      <div class="skeleton" style="height:120px;border-radius:14px"></div>
+      <div class="skeleton" style="height:120px;border-radius:14px"></div>
+      <div class="skeleton" style="height:120px;border-radius:14px"></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED COURSES -->
+<section class="section">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-badge"><i class="fas fa-fire"></i> Top Picks</div>
+      <h2 class="section-title">Featured Courses</h2>
+      <p class="section-subtitle">Handpicked by our experts — start learning today</p>
+    </div>
+    <div class="courses-tabs">
+      <button class="tab-btn active" onclick="filterTab('all',this)">All Courses</button>
+      <button class="tab-btn" onclick="filterTab('free',this)">Free</button>
+      <button class="tab-btn" onclick="filterTab('popular',this)">Most Popular</button>
+      <button class="tab-btn" onclick="filterTab('new',this)">Newest</button>
+    </div>
+    <div class="courses-grid" id="featuredGrid">
+      <div class="skeleton" style="height:320px;border-radius:20px"></div>
+      <div class="skeleton" style="height:320px;border-radius:20px"></div>
+      <div class="skeleton" style="height:320px;border-radius:20px"></div>
+      <div class="skeleton" style="height:320px;border-radius:20px"></div>
+    </div>
+    <div style="text-align:center;margin-top:36px">
+      <a href="/pages/courses.html" class="btn btn-outline btn-lg"><i class="fas fa-th-large"></i> Browse All 100+ Courses</a>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" style="background:var(--bg-2)" id="features">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-badge"><i class="fas fa-star"></i> Why EduVerse?</div>
+      <h2 class="section-title">Everything You Need to Succeed</h2>
+      <p class="section-subtitle">A complete learning ecosystem built for students and professionals</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(79,70,229,0.2);color:#818CF8"><i class="fas fa-video"></i></div>
+        <h3>Live Classes</h3>
+        <p>Join real-time Zoom sessions with expert instructors. Ask questions, get instant feedback.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(16,185,129,0.2);color:#34D399"><i class="fas fa-certificate"></i></div>
+        <h3>Certificates</h3>
+        <p>Earn industry-recognized certificates upon course completion. Download and share instantly.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(245,158,11,0.2);color:#FCD34D"><i class="fas fa-robot"></i></div>
+        <h3>AI Chatbot</h3>
+        <p>Get instant answers to your doubts 24/7 with our smart AI assistant.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(239,68,68,0.2);color:#FCA5A5"><i class="fas fa-tasks"></i></div>
+        <h3>Quizzes & Tests</h3>
+        <p>Test your knowledge with timed quizzes. Get instant scores and detailed feedback.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(124,58,237,0.2);color:#A78BFA"><i class="fas fa-download"></i></div>
+        <h3>Study Notes</h3>
+        <p>Download comprehensive PDF notes and study materials for offline learning.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(6,182,212,0.2);color:#67E8F9"><i class="fas fa-chart-line"></i></div>
+        <h3>Progress Tracking</h3>
+        <p>Track your learning journey with detailed analytics and completion percentage.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-badge"><i class="fas fa-quote-left"></i> Student Reviews</div>
+      <h2 class="section-title">What Our Students Say</h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"EduVerse completely transformed my career. The Python Data Science course is phenomenal — real projects, expert teaching, and an amazing community."</p>
+        <div class="testimonial-author"><div class="testimonial-avatar">A</div><div><strong>Arjun Sharma</strong><div style="font-size:0.78rem;color:var(--text-muted)">Data Analyst at TCS</div></div></div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"The live classes and chatbot support are game-changers. I cleared my AWS certification after completing the cloud course. Highly recommend!"</p>
+        <div class="testimonial-author"><div class="testimonial-avatar" style="background:linear-gradient(135deg,#7C3AED,#06B6D4)">P</div><div><strong>Priya Nair</strong><div style="font-size:0.78rem;color:var(--text-muted)">Cloud Engineer at Infosys</div></div></div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"The quiz system and certificates make learning engaging. My parents get weekly updates too! Best platform for serious students."</p>
+        <div class="testimonial-author"><div class="testimonial-avatar" style="background:linear-gradient(135deg,#059669,#06B6D4)">R</div><div><strong>Rahul Mehta</strong><div style="font-size:0.78rem;color:var(--text-muted)">Full Stack Developer</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2>Start Your Learning Journey Today</h2>
+  <p>Join 50,000+ students already learning on EduVerse. No credit card required.</p>
+  <div class="cta-buttons">
+    <a href="/pages/register.html" class="btn btn-primary btn-xl"><i class="fas fa-rocket"></i> Register as Student</a>
+    <a href="/pages/register.html?role=admin" class="btn btn-ghost btn-xl"><i class="fas fa-user-shield"></i> Register as Admin</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="nav-logo" style="display:inline-flex">
+        <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+        <span style="font-family:var(--font-display);font-weight:700">EduVerse</span>
+      </div>
+      <p>Empowering students with world-class education and cutting-edge technology. Learn, grow, and succeed with EduVerse.</p>
+      <div style="display:flex;gap:12px">
+        <a href="#" style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;transition:all 0.2s" onmouseover="this.style.color='#818CF8'" onmouseout="this.style.color='var(--text-muted)'"><i class="fab fa-twitter"></i></a>
+        <a href="#" style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;transition:all 0.2s"><i class="fab fa-linkedin-in"></i></a>
+        <a href="#" style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;transition:all 0.2s"><i class="fab fa-youtube"></i></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Courses</h4>
+      <a href="/pages/courses.html?cat=web-development">Web Development</a>
+      <a href="/pages/courses.html?cat=data-science">Data Science</a>
+      <a href="/pages/courses.html?cat=mobile-development">Mobile Apps</a>
+      <a href="/pages/courses.html?cat=cybersecurity">Cybersecurity</a>
+      <a href="/pages/courses.html?cat=cloud-computing">Cloud & DevOps</a>
+    </div>
+    <div class="footer-col">
+      <h4>Platform</h4>
+      <a href="/pages/register.html">Student Register</a>
+      <a href="/pages/register.html?role=admin">Admin Register</a>
+      <a href="/pages/login.html">Login</a>
+      <a href="/pages/dashboard.html">Dashboard</a>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <a href="#">Help Center</a>
+      <a href="#">Contact Us</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2024 EduVerse. All rights reserved.</span>
+    <span>Built with ❤️ as a Final Year Project</span>
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script>
+let allCourses = [];
+let activeTab = 'all';
+
+async function loadCategories() {
+  try {
+    const cats = await API.get('/categories');
+    const grid = document.getElementById('categoriesGrid');
+    grid.innerHTML = cats.map(c => `
+      <a href="/pages/courses.html?cat=${c.slug}" class="category-card" onclick="void(0)">
+        <div class="category-icon-wrap" style="background:${c.color}22;color:${c.color}">
+          <i class="${c.icon}"></i>
+        </div>
+        <h3>${c.name}</h3>
+        <p>${c.course_count || 0} courses</p>
+      </a>`).join('');
+  } catch(e) { console.error(e); }
+}
+
+async function loadFeaturedCourses(filter = 'all') {
+  try {
+    const params = filter === 'free' ? '?price=0&sort=popular' : filter === 'popular' ? '?sort=popular' : filter === 'new' ? '?sort=newest' : '?sort=popular';
+    const data = await API.get(`/courses${params}&limit=8`);
+    allCourses = data.courses || [];
+    renderCourses(allCourses);
+  } catch(e) { console.error(e); }
+}
+
+function renderCourses(courses) {
+  const grid = document.getElementById('featuredGrid');
+  let filtered = courses;
+  if (activeTab === 'free') filtered = courses.filter(c => !c.price || c.price === 0);
+  grid.innerHTML = filtered.length ? filtered.map(c => buildCourseCard(c)).join('') : '<p style="color:var(--text-muted);grid-column:1/-1;text-align:center;padding:40px">No courses found</p>';
+}
+
+function filterTab(tab, btn) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (tab === 'free') renderCourses(allCourses.filter(c => !c.price || c.price === 0));
+  else if (tab === 'popular') { const sorted = [...allCourses].sort((a,b) => b.enrolled_count-a.enrolled_count); renderCourses(sorted); }
+  else if (tab === 'new') { const sorted = [...allCourses].sort((a,b) => new Date(b.created_at)-new Date(a.created_at)); renderCourses(sorted); }
+  else renderCourses(allCourses);
+}
+
+function searchCourses() {
+  const q = document.getElementById('heroSearch')?.value || document.getElementById('navSearchInput')?.value;
+  if (q?.trim()) window.location.href = `/pages/courses.html?search=${encodeURIComponent(q.trim())}`;
+}
+
+function quickSearch(term) {
+  document.getElementById('heroSearch').value = term;
+  searchCourses();
+}
+
+function goToDash() {
+  const user = API.getUser();
+  window.location.href = user?.role === 'admin' ? '/pages/admin-dashboard.html' : '/pages/dashboard.html';
+}
+
+function toggleMobileNav() {
+  const nav = document.getElementById('mobileNavDropdown');
+  if (!nav) return;
+  nav.classList.toggle('open');
+}
+
+loadCategories();
+loadFeaturedCourses();
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Class Attendance</title>
+    
+    <!-- face-api.js chi updated library CDN varun -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
+    
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f3f4f6; padding: 20px; }
+        .video-container { width: 640px; height: 480px; margin: 20px auto; background: #000; border: 4px solid #4F46E5; border-radius: 10px; overflow: hidden; position: relative; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        #status { font-size: 18px; font-weight: bold; margin: 15px 0; color: #333; }
+        button { padding: 12px 25px; font-size: 16px; background-color: #4F46E5; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <h2>Live Class Face Attendance</h2>
+    
+    <div class="video-container">
+        <video id="video" autoplay muted playsinline></video>
+    </div>
+    
+    <p id="status">⏳ Loading AI Models... Please wait.</p>
+    
+    <button id="verifyBtn" disabled>Verify & Mark Attendance</button>
+
+    <script>
+        const video = document.getElementById('video');
+        const statusText = document.getElementById('status');
+        const verifyBtn = document.getElementById('verifyBtn');
+
+        // Step 1: AI Models Load Kara (Aapan copy kelele /models folder madhun)
+        async function loadModels() {
+            try {
+                // He models backend dware serve hotil
+                await faceapi.nets.ssdMobilenetv1.loadFromUri('/models');
+                await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+                await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+                
+                statusText.innerText = "✅ Models loaded! Starting camera...";
+                statusText.style.color = "blue";
+                startVideo();
+            } catch (error) {
+                console.error(error);
+                statusText.innerText = "❌ Error loading models. Check 'models' folder.";
+                statusText.style.color = "red";
+            }
+        }
+
+        // Step 2: Camera chalu kara
+        function startVideo() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    video.srcObject = stream;
+                    statusText.innerText = "✅ Camera Ready! Position your face and click Verify.";
+                    statusText.style.color = "green";
+                    verifyBtn.disabled = false;
+                })
+                .catch(err => {
+                    console.error("Camera Error:", err);
+                    statusText.innerText = "❌ Please allow camera access.";
+                    statusText.style.color = "red";
+                });
+        }
+
+        // Step 3: Button var click kelyavar chehra scan ani backend la verify API call
+        verifyBtn.addEventListener('click', async () => {
+            statusText.innerText = "🔍 Scanning face... Please hold still.";
+            statusText.style.color = "orange";
+            verifyBtn.disabled = true;
+
+            try {
+                const detection = await faceapi.detectSingleFace(video)
+                                               .withFaceLandmarks()
+                                               .withFaceDescriptor();
+
+                if (!detection) {
+                    statusText.innerText = "❌ No face detected. Look directly at the camera.";
+                    statusText.style.color = "red";
+                    verifyBtn.disabled = false;
+                    return;
+                }
+
+                // Float32Array la regular array madhe convert kara
+                const descriptorArray = Array.from(detection.descriptor);
+
+                // Tumcha local storage madhla token gheu (Student Login nantar jo save hoto)
+                const token = localStorage.getItem('token'); 
+
+                // Backend API call
+                const response = await fetch('/api/attendance/face-verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        live_class_id: 1, // Ithe dynamic class id pass kara
+                        currentDescriptor: descriptorArray
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    statusText.innerText = "🎉 Face Verified! Attendance Marked Successfully.";
+                    statusText.style.color = "green";
+                } else {
+                    statusText.innerText = "❌ Match Failed: " + (result.error || "Please try again.");
+                    statusText.style.color = "red";
+                    verifyBtn.disabled = false;
+                }
+
+            } catch (err) {
+                console.error(err);
+                statusText.innerText = "❌ Server error occurred.";
+                statusText.style.color = "red";
+                verifyBtn.disabled = false;
+            }
+        });
+
+        // Initialize
+        window.onload = loadModels;
+    </script>
+</body>
+</html>

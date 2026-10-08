@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard — EduVerse</title>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .admin-badge { background:rgba(239,68,68,0.15);color:#FCA5A5;border:1px solid rgba(239,68,68,0.25);padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:700; }
+    .question-builder { border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; margin-bottom:12px; background:rgba(255,255,255,0.02); }
+    .question-builder .q-num { font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:10px; }
+    .sms-log { background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:8px; }
+    .quick-action { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:18px;text-align:center;cursor:pointer;transition:all 0.2s; }
+    .quick-action:hover { border-color:var(--primary);transform:translateY(-2px); }
+    .quick-action-icon { font-size:1.8rem;margin-bottom:8px; }
+    .quick-action p { font-size:0.82rem;color:var(--text-muted); }
+  </style>
+</head>
+<body>
+<nav class="navbar scrolled">
+  <div class="nav-container">
+    <a href="/" class="nav-logo"><div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>EduVerse</a>
+    <span class="admin-badge"><i class="fas fa-shield-alt"></i> Admin</span>
+    <div class="nav-actions" style="margin-left:auto;gap:12px">
+      <div class="nav-avatar" id="navAvatarEl">A</div>
+      <span id="navNameEl" style="font-size:0.88rem;font-weight:600"></span>
+      <button class="btn btn-ghost btn-sm" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+    </div>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Dashboard</div>
+      <div class="sidebar-link active" onclick="showSection('overview',this)"><i class="fas fa-chart-pie"></i> Overview</div>
+      <div class="sidebar-section-label">Management</div>
+      <div class="sidebar-link" onclick="showSection('students',this)"><i class="fas fa-users"></i> Students</div>
+      <div class="sidebar-link" onclick="showSection('courses',this)"><i class="fas fa-book"></i> Courses</div>
+      <div class="sidebar-link" onclick="showSection('live-classes',this)"><i class="fas fa-video"></i> Live Classes</div>
+      <div class="sidebar-link" onclick="showSection('quizzes',this)"><i class="fas fa-tasks"></i> Quizzes</div>
+      <div class="sidebar-section-label">Content</div>
+      <div class="sidebar-link" onclick="showSection('upload-notes',this)"><i class="fas fa-file-upload"></i> Upload Notes</div>
+      <div class="sidebar-link" onclick="showSection('upload-video',this)"><i class="fas fa-film"></i> Upload Video</div>
+      <div class="sidebar-section-label">Communication</div>
+      <div class="sidebar-link" onclick="showSection('parent-sms',this)"><i class="fas fa-sms"></i> Parent SMS</div>
+      <div class="sidebar-link" onclick="showSection('messages',this)"><i class="fas fa-comments"></i> Messages</div>
+      <div class="sidebar-section-label">Reports</div>
+      <div class="sidebar-link" onclick="showSection('quiz-results',this)"><i class="fas fa-chart-bar"></i> Quiz Results</div>
+      <div class="sidebar-link" onclick="showSection('attendance',this)"><i class="fas fa-clipboard-check"></i> Attendance</div>
+      <div class="sidebar-link" onclick="logout()" style="color:var(--danger)"><i class="fas fa-sign-out-alt"></i> Logout</div>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- OVERVIEW -->
+    <div id="sec-overview">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <div><h2 style="font-family:var(--font-display);font-size:1.6rem;margin-bottom:2px" id="adminWelcome">Admin Dashboard</h2><p style="color:var(--text-muted);font-size:0.88rem">Manage your platform</p></div>
+        <div style="font-size:0.82rem;color:var(--text-muted)"><i class="fas fa-calendar"></i> <span id="currentDate"></span></div>
+      </div>
+      <div class="stats-grid mb-24">
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(79,70,229,0.2)"><i class="fas fa-users" style="color:#818CF8"></i></div><div><div class="stat-value" id="statStudents">—</div><div class="stat-label">Total Students</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(16,185,129,0.2)"><i class="fas fa-book" style="color:#34D399"></i></div><div><div class="stat-value" id="statCourses">—</div><div class="stat-label">Courses</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(245,158,11,0.2)"><i class="fas fa-graduation-cap" style="color:#FCD34D"></i></div><div><div class="stat-value" id="statEnrollments">—</div><div class="stat-label">Enrollments</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(6,182,212,0.2)"><i class="fas fa-video" style="color:#67E8F9"></i></div><div><div class="stat-value" id="statLive">—</div><div class="stat-label">Live Classes</div></div></div>
+      </div>
+      <h3 style="margin-bottom:16px;font-size:1rem">Quick Actions</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:28px">
+        <div class="quick-action" onclick="showSection('courses');openModal('addCourseModal')"><div class="quick-action-icon">📚</div><strong>Add Course</strong><p>Create new course</p></div>
+        <div class="quick-action" onclick="showSection('live-classes');openModal('scheduleLiveModal')"><div class="quick-action-icon">🎥</div><strong>Schedule Class</strong><p>Plan live session</p></div>
+        <div class="quick-action" onclick="showSection('quizzes');openModal('createQuizModal')"><div class="quick-action-icon">📝</div><strong>Create Quiz</strong><p>Add new test</p></div>
+        <div class="quick-action" onclick="showSection('upload-notes')"><div class="quick-action-icon">📄</div><strong>Upload Notes</strong><p>Add study material</p></div>
+        <div class="quick-action" onclick="showSection('parent-sms')"><div class="quick-action-icon">📱</div><strong>Send SMS</strong><p>Notify parents</p></div>
+        <div class="quick-action" onclick="showSection('students')"><div class="quick-action-icon">👥</div><strong>View Students</strong><p>Manage students</p></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="table-card"><div class="table-header"><h3>Recent Students</h3></div><table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Joined</th></tr></thead><tbody id="recentStudents"></tbody></table></div>
+        <div class="table-card"><div class="table-header"><h3>Upcoming Classes</h3></div><div id="upcomingAdmin" style="padding:16px"></div></div>
+      </div>
+    </div>
+
+    <!-- STUDENTS -->
+    <div id="sec-students" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <h2 style="font-family:var(--font-display);font-size:1.5rem">Student Management</h2>
+      </div>
+      <div class="search-bar" style="max-width:420px;margin-bottom:20px">
+        <input type="text" id="studentSearch" placeholder="Search students..." oninput="filterStudents()" style="flex:1;background:rgba(255,255,255,0.04);border:none;color:var(--text-primary);padding:11px 16px;font-size:0.9rem"/>
+        <button style="background:var(--primary);color:#fff;padding:11px 18px;font-size:0.9rem"><i class="fas fa-search"></i></button>
+      </div>
+      <div class="table-card">
+        <table class="data-table">
+          <thead><tr><th>Student</th><th>Email</th><th>Phone</th><th>Parent Phone</th><th>Courses</th><th>Joined</th><th>Action</th></tr></thead>
+          <tbody id="studentsTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- COURSES -->
+    <div id="sec-courses" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <h2 style="font-family:var(--font-display);font-size:1.5rem">Course Management</h2>
+        <button class="btn btn-primary" onclick="openModal('addCourseModal')"><i class="fas fa-plus"></i> Add Course</button>
+      </div>
+      <div class="table-card">
+        <div class="table-header"><h3>All Courses</h3><input type="text" placeholder="Search..." oninput="filterCourses(this.value)" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);padding:7px 12px;font-size:0.85rem;width:200px"/></div>
+        <table class="data-table">
+          <thead><tr><th>Course</th><th>Instructor</th><th>Category</th><th>Price</th><th>Level</th><th>Students</th><th>Actions</th></tr></thead>
+          <tbody id="coursesTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LIVE CLASSES -->
+    <div id="sec-live-classes" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <h2 style="font-family:var(--font-display);font-size:1.5rem">Live Class Management</h2>
+        <button class="btn btn-primary" onclick="openModal('scheduleLiveModal')"><i class="fas fa-plus"></i> Schedule Class</button>
+      </div>
+      <div class="table-card">
+        <table class="data-table">
+          <thead><tr><th>Title</th><th>Course</th><th>Platform</th><th>Date & Time</th><th>Duration</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="liveClassesTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- QUIZZES -->
+    <div id="sec-quizzes" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <h2 style="font-family:var(--font-display);font-size:1.5rem">Quiz Management</h2>
+        <button class="btn btn-primary" onclick="openModal('createQuizModal')"><i class="fas fa-plus"></i> Create Quiz</button>
+      </div>
+      <div id="quizCardsGrid" style="display:grid;gap:14px"></div>
+    </div>
+
+    <!-- UPLOAD NOTES -->
+    <div id="sec-upload-notes" style="display:none">
+      <h2 style="font-family:var(--font-display);font-size:1.5rem;margin-bottom:24px">Upload Study Notes</h2>
+      <div class="table-card" style="padding:28px;max-width:600px">
+        <form id="uploadNotesForm" onsubmit="uploadNotes(event)">
+          <div class="form-group">
+            <label class="form-label">Select Course <span class="required">*</span></label>
+            <select class="form-control" name="course_id" id="notesCourseSelect" required><option value="">Choose course...</option></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Note Title <span class="required">*</span></label>
+            <input type="text" class="form-control" name="title" placeholder="e.g. Module 1 - Introduction Notes" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="3" placeholder="Brief description of the notes"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">PDF File <span class="required">*</span></label>
+            <div class="file-upload-area" onclick="document.getElementById('notesFile').click()" id="notesDropArea">
+              <i class="fas fa-file-pdf"></i>
+              <p id="notesFileName">Click to upload PDF file</p>
+              <span>PDF, DOC, DOCX, PPT • Max 50MB</span>
+            </div>
+            <input type="file" id="notesFile" name="file" accept=".pdf,.doc,.docx,.ppt,.pptx" style="display:none" onchange="document.getElementById('notesFileName').textContent=this.files[0]?.name||'File selected'"/>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="uploadNotesBtn"><i class="fas fa-upload"></i> Upload Notes</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- UPLOAD VIDEO -->
+    <div id="sec-upload-video" style="display:none">
+      <h2 style="font-family:var(--font-display);font-size:1.5rem;margin-bottom:24px">Upload Video Lecture</h2>
+      <div class="table-card" style="padding:28px;max-width:600px">
+        <form id="uploadVideoForm" onsubmit="uploadVideo(event)">
+          <div class="form-group">
+            <label class="form-label">Select Course <span class="required">*</span></label>
+            <select class="form-control" name="course_id" id="videoCourseSelect" required><option value="">Choose course...</option></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Video Title <span class="required">*</span></label>
+            <input type="text" class="form-control" name="title" placeholder="e.g. Module 1 - Introduction" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Duration (minutes)</label>
+            <input type="number" class="form-control" name="duration_minutes" placeholder="e.g. 45" min="1"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Video URL (or upload file)</label>
+            <input type="url" class="form-control" name="video_url" placeholder="https://youtube.com/... or direct video URL"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Or Upload Video File</label>
+            <div class="file-upload-area" onclick="document.getElementById('videoFileInput').click()">
+              <i class="fas fa-film"></i>
+              <p id="videoFileName">Click to upload video</p>
+              <span>MP4, MOV, AVI • Max 500MB</span>
+            </div>
+            <input type="file" id="videoFileInput" name="video" accept="video/*" style="display:none" onchange="document.getElementById('videoFileName').textContent=this.files[0]?.name||'Video selected'"/>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-upload"></i> Upload Video</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- PARENT SMS -->
+    <div id="sec-parent-sms" style="display:none">
+      <h2 style="font-family:var(--font-display);font-size:1.5rem;margin-bottom:24px">Parent Notification System</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="table-card" style="padding:24px">
+          <h3 style="margin-bottom:18px;font-size:1rem">Send SMS to Parent</h3>
+          <form id="smsForm" onsubmit="sendSMS(event)">
+            <div class="form-group">
+              <label class="form-label">Select Student</label>
+              <select class="form-control" id="smsStudentSelect" name="student_id" onchange="fillParentPhone(this)">
+                <option value="">Choose student...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Parent Phone Number <span class="required">*</span></label>
+              <input type="tel" class="form-control" id="parentPhoneInput" name="parent_phone" placeholder="Parent's phone number" required/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Message Type</label>
+              <select class="form-control" name="type" id="smsType" onchange="fillTemplate()">
+                <option value="general">General Message</option>
+                <option value="absence">Absent from Class</option>
+                <option value="low_marks">Low Test Marks</option>
+                <option value="progress">Weekly Progress Report</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Message <span class="required">*</span></label>
+              <textarea class="form-control" id="smsMessage" name="message" rows="4" placeholder="Type your message..." required maxlength="160"></textarea>
+              <div class="form-hint" id="smsCharCount">0/160 characters</div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-paper-plane"></i> Send SMS</button>
+          </form>
+        </div>
+        <div class="table-card" style="padding:24px">
+          <h3 style="margin-bottom:16px;font-size:1rem">SMS History</h3>
+          <div id="smsHistory">
+            <p style="color:var(--text-muted);font-size:0.88rem;text-align:center;padding:20px">No messages sent yet</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div id="sec-messages" style="display:none">
+      <h2 style="font-family:var(--font-display);font-size:1.5rem;margin-bottom:24px">Student Messages</h2>
+      <div class="table-card">
+        <div class="table-header"><h3>Inbox</h3></div>
+        <div id="messagesInbox" style="padding:16px 24px">
+          <p style="color:var(--text-muted);text-align:center;padding:20px">Loading messages...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUIZ RESULTS -->
+    <div id="sec-quiz-results" style="display:none">
+      <h2 style="font-family:var(--font-display);font-size:1.5rem;margin-bottom:24px">Quiz Results</h2>
+      <div class="table-card">
+        <div class="table-header"><h3>All Student Results</h3></div>
+        <table class="data-table">
+          <thead><tr><th>Student</th><th>Quiz</th><th>Score</th><th>Percentage</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody id="resultsTable"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">No results yet</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div id="sec-attendance" style="display:none">
+      <h2 style="font-family:var(--font-display);font-size:1.5rem;margin-bottom:24px">Attendance Report</h2>
+      <div class="table-card">
+        <table class="data-table">
+          <thead><tr><th>Student</th><th>Class</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody id="attendanceTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════ MODALS ═══════════ -->
+
+<!-- ADD COURSE MODAL -->
+<div class="modal-overlay" id="addCourseModal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header"><h3><i class="fas fa-book"></i> Add New Course</h3><button class="modal-close" onclick="closeModal('addCourseModal')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body">
+      <form id="addCourseForm" onsubmit="addCourse(event)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Course Title <span class="required">*</span></label>
+            <input type="text" class="form-control" name="title" placeholder="e.g. Complete React.js Bootcamp" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select class="form-control" name="category_id" id="courseCatSelect"><option value="">Select category...</option></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Instructor Name</label>
+            <input type="text" class="form-control" name="instructor_name" placeholder="Instructor name"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Price (₹) — 0 for free</label>
+            <input type="number" class="form-control" name="price" placeholder="0" min="0" value="0"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Duration (hours)</label>
+            <input type="number" class="form-control" name="duration_hours" placeholder="0" min="0"/>
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Level</label>
+            <select class="form-control" name="level"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select>
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="3" placeholder="Course description..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding:0;border:none;margin-top:4px">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('addCourseModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Course</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- SCHEDULE LIVE CLASS MODAL -->
+<div class="modal-overlay" id="scheduleLiveModal">
+  <div class="modal">
+    <div class="modal-header"><h3><i class="fas fa-video"></i> Schedule Live Class</h3><button class="modal-close" onclick="closeModal('scheduleLiveModal')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body">
+      <form id="scheduleLiveForm" onsubmit="scheduleLive(event)">
+        <div class="form-group">
+          <label class="form-label">Class Title <span class="required">*</span></label>
+          <input type="text" class="form-control" name="title" placeholder="e.g. Python Intro - Session 1" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" name="description" rows="2" placeholder="What will be covered..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Course</label>
+          <select class="form-control" name="course_id" id="liveCourseSelect"><option value="">All Students (General)</option></select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="form-group">
+            <label class="form-label">Date & Time <span class="required">*</span></label>
+            <input type="datetime-local" class="form-control" name="scheduled_at" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Duration (minutes)</label>
+            <input type="number" class="form-control" name="duration_minutes" value="60" min="15"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Platform</label>
+            <select class="form-control" name="platform"><option>Zoom</option><option>Google Meet</option><option>Microsoft Teams</option><option>YouTube Live</option></select>
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Meeting Link <span class="required">*</span></label>
+            <input type="url" class="form-control" name="zoom_link" placeholder="https://zoom.us/j/..." required/>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding:0;border:none;margin-top:4px">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('scheduleLiveModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-calendar-plus"></i> Schedule</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- UPDATE LIVE STATUS MODAL -->
+<div class="modal-overlay" id="updateLiveModal">
+  <div class="modal">
+    <div class="modal-header"><h3>Update Class Status</h3><button class="modal-close" onclick="closeModal('updateLiveModal')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="updateLiveId"/>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-control" id="updateLiveStatus">
+          <option value="scheduled">Scheduled</option>
+          <option value="live">Live Now</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Recording URL (for completed classes)</label>
+        <input type="url" class="form-control" id="recordingUrl" placeholder="https://...recording link"/>
+        <div class="form-hint">This will automatically appear as a video lecture for enrolled students</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('updateLiveModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="updateLiveStatus()"><i class="fas fa-save"></i> Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE QUIZ MODAL -->
+<div class="modal-overlay" id="createQuizModal">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header"><h3><i class="fas fa-tasks"></i> Create Quiz</h3><button class="modal-close" onclick="closeModal('createQuizModal')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body">
+      <form id="createQuizForm" onsubmit="createQuiz(event)">
+        <div class="form-group">
+          <label class="form-label">Quiz Title <span class="required">*</span></label>
+          <input type="text" class="form-control" name="title" placeholder="e.g. Python Basics Assessment" required/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+          <div class="form-group">
+            <label class="form-label">Course</label>
+            <select class="form-control" name="course_id" id="quizCourseSelect"><option value="">General</option></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Duration (min)</label>
+            <input type="number" class="form-control" name="duration_minutes" value="30" min="5"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Pass % </label>
+            <input type="number" class="form-control" name="pass_percent" value="60" min="0" max="100"/>
+          </div>
+        </div>
+        <h4 style="margin:12px 0 12px;font-size:0.9rem">Questions</h4>
+        <div id="questionsContainer"></div>
+        <button type="button" class="btn btn-secondary" onclick="addQuestion()" style="width:100%;margin-bottom:14px"><i class="fas fa-plus"></i> Add Question</button>
+        <div class="modal-footer" style="padding:0;border:none">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('createQuizModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Quiz</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+if (!requireAdmin()) {}
+
+let user = API.getUser();
+let adminStudents = [];
+let adminCourses = [];
+let adminLiveClasses = [];
+let adminQuizzes = [];
+let qCount = 0;
+let smsHistory = [];
+
+function initAdmin() {
+  if (!user) return;
+  document.getElementById('adminWelcome').textContent = `Welcome, ${user.full_name?.split(' ')[0] || 'Admin'} 👋`;
+  document.getElementById('navAvatarEl').textContent = (user.full_name||'A')[0].toUpperCase();
+  document.getElementById('navNameEl').textContent = user.full_name?.split(' ')[0] || 'Admin';
+  document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  loadAllAdminData();
+}
+
+async function loadAllAdminData() {
+  await Promise.all([loadStats(), loadStudents(), loadCourses(), loadLiveClasses(), loadQuizzes(), loadCategories(), loadResults(), loadAttendance()]);
+}
+
+async function loadStats() {
+  try {
+    const stats = await API.get('/admin/stats');
+    document.getElementById('statStudents').textContent = stats.students;
+    document.getElementById('statCourses').textContent = stats.courses;
+    document.getElementById('statEnrollments').textContent = stats.enrollments;
+    document.getElementById('statLive').textContent = stats.live_classes;
+  } catch(e) {}
+}
+
+async function loadStudents() {
+  try {
+    adminStudents = await API.get('/admin/students');
+    renderStudentsTable(adminStudents);
+    renderRecentStudents(adminStudents.slice(0,5));
+    populateStudentSelect();
+  } catch(e) {}
+}
+
+async function loadCourses() {
+  try {
+    const data = await API.get('/courses?limit=100&sort=popular');
+    adminCourses = data.courses || [];
+    renderCoursesTable(adminCourses);
+    populateCourseSelects();
+  } catch(e) {}
+}
+
+async function loadLiveClasses() {
+  try {
+    adminLiveClasses = await API.get('/live-classes');
+    renderLiveClassesTable(adminLiveClasses);
+    renderUpcomingAdmin(adminLiveClasses.filter(lc=>lc.status==='scheduled').slice(0,4));
+  } catch(e) {}
+}
+
+async function loadQuizzes() {
+  try {
+    adminQuizzes = await API.get('/quizzes');
+    renderQuizCards(adminQuizzes);
+  } catch(e) {}
+}
+
+async function loadCategories() {
+  try {
+    const cats = await API.get('/categories');
+    const catSel = document.getElementById('courseCatSelect');
+    cats.forEach(c => { const opt=document.createElement('option'); opt.value=c.id; opt.textContent=c.name; catSel.appendChild(opt); });
+  } catch(e) {}
+}
+
+async function loadResults() {
+  try {
+    const results = await API.get('/admin/quiz-results');
+    const tbody = document.getElementById('resultsTable');
+    if (!results.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">No quiz results yet</td></tr>'; return; }
+    tbody.innerHTML = results.map(r=>`
+      <tr><td>${r.student_name||'Student'}</td><td>${r.quiz_title||'Quiz'}</td><td>${r.score}/${r.total_marks}</td>
+      <td>${parseFloat(r.percentage).toFixed(1)}%</td>
+      <td>${r.is_passed?'<span class="badge badge-success">Passed</span>':'<span class="badge badge-danger">Failed</span>'}</td>
+      <td>${formatDate(r.submitted_at)}</td></tr>`).join('');
+  } catch(e) {}
+}
+
+async function loadAttendance() {
+  try {
+    const att = await API.get('/admin/attendance');
+    const tbody = document.getElementById('attendanceTable');
+    if (!att.length) { tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:24px">No attendance records</td></tr>'; return; }
+    tbody.innerHTML = att.map(a=>`<tr><td>${a.student_name||'Student'}</td><td>${a.class_title||'Class'}</td><td>${formatDateTime(a.joined_at)}</td><td><span class="badge badge-success">Present</span></td></tr>`).join('');
+  } catch(e) {}
+}
+
+function renderStudentsTable(students) {
+  const tbody = document.getElementById('studentsTable');
+  if (!students.length) { tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">No students found</td></tr>'; return; }
+  tbody.innerHTML = students.map(s=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:10px"><div class="user-avatar-sm">${(s.full_name||'S')[0]}</div>${s.full_name}</div></td>
+      <td>${s.email}</td>
+      <td>${s.phone||'—'}</td>
+      <td>${s.parent_phone||'—'}</td>
+      <td><span class="badge badge-primary">${s.enrolled_courses||0}</span></td>
+      <td>${formatDate(s.created_at)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="sendSMSToStudent('${s.parent_phone||''}','${s.full_name||''}')"><i class="fas fa-sms"></i></button></td>
+    </tr>`).join('');
+}
+
+function renderRecentStudents(students) {
+  const tbody = document.getElementById('recentStudents');
+  if (!students.length) { tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:20px">No students</td></tr>'; return; }
+  tbody.innerHTML = students.map(s=>`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="user-avatar-sm">${(s.full_name||'S')[0]}</div>${s.full_name}</div></td><td style="font-size:0.8rem">${s.email}</td><td>${formatDate(s.created_at)}</td></tr>`).join('');
+}
+
+function filterStudents() {
+  const q = document.getElementById('studentSearch').value.toLowerCase();
+  const filtered = adminStudents.filter(s => (s.full_name+s.email+s.phone).toLowerCase().includes(q));
+  renderStudentsTable(filtered);
+}
+
+function renderCoursesTable(courses) {
+  const tbody = document.getElementById('coursesTable');
+  if (!courses.length) { tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">No courses</td></tr>'; return; }
+  tbody.innerHTML = courses.map(c=>`
+    <tr>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.title}</td>
+      <td>${c.instructor_name||'—'}</td>
+      <td><span class="badge badge-primary">${c.category_name||'—'}</span></td>
+      <td>${!c.price||c.price==0?'<span class="badge badge-success">FREE</span>':'₹'+parseFloat(c.price).toLocaleString('en-IN')}</td>
+      <td><span class="badge ${c.level==='Beginner'?'badge-success':c.level==='Advanced'?'badge-danger':'badge-warning'}">${c.level}</span></td>
+      <td>${(c.enrolled_count||0).toLocaleString()}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteCourse(${c.id})"><i class="fas fa-trash"></i></button></td>
+    </tr>`).join('');
+}
+
+function filterCourses(q) {
+  const filtered = adminCourses.filter(c => (c.title+c.instructor_name).toLowerCase().includes(q.toLowerCase()));
+  renderCoursesTable(filtered);
+}
+
+function renderLiveClassesTable(classes) {
+  const tbody = document.getElementById('liveClassesTable');
+  if (!classes.length) { tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">No live classes scheduled</td></tr>'; return; }
+  tbody.innerHTML = classes.map(lc=>`
+    <tr>
+      <td>${lc.title}</td>
+      <td>${lc.course_title||'General'}</td>
+      <td>${lc.platform||'Zoom'}</td>
+      <td>${formatDateTime(lc.scheduled_at)}</td>
+      <td>${lc.duration_minutes} min</td>
+      <td>${getLiveStatus(lc.status)}</td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-secondary btn-sm" onclick="openUpdateLive(${lc.id},'${lc.status}')"><i class="fas fa-edit"></i></button>
+        ${lc.zoom_link?`<a href="${lc.zoom_link}" target="_blank" class="btn btn-primary btn-sm"><i class="fas fa-video"></i></a>`:''}
+      </td>
+    </tr>`).join('');
+}
+
+function renderUpcomingAdmin(classes) {
+  const el = document.getElementById('upcomingAdmin');
+  if (!classes.length) { el.innerHTML='<p style="color:var(--text-muted);font-size:0.88rem;text-align:center;padding:12px">No upcoming classes</p>'; return; }
+  el.innerHTML = classes.map(lc=>`
+    <div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+      <div style="font-weight:600;font-size:0.88rem;margin-bottom:3px">${lc.title}</div>
+      <div style="font-size:0.76rem;color:var(--text-muted)">${formatDateTime(lc.scheduled_at)} • ${lc.duration_minutes} min</div>
+    </div>`).join('');
+}
+
+function renderQuizCards(quizzes) {
+  const el = document.getElementById('quizCardsGrid');
+  if (!quizzes.length) { el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted)"><p>No quizzes created yet</p></div>'; return; }
+  el.innerHTML = quizzes.map(q=>`
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;display:flex;align-items:center;gap:16px">
+      <div style="width:52px;height:52px;border-radius:14px;background:rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">📝</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:1rem;margin-bottom:3px">${q.title}</div>
+        <div style="font-size:0.8rem;color:var(--text-muted)">${q.course_title||'General'} • ${q.total_questions||0} Questions • ${q.duration_minutes} min • Pass: ${q.pass_percent}%</div>
+      </div>
+      <span class="badge badge-success">Published</span>
+    </div>`).join('');
+}
+
+function populateCourseSelects() {
+  ['liveCourseSelect','notesCourseSelect','videoCourseSelect','quizCourseSelect'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel) return;
+    const firstOpt = sel.options[0];
+    sel.innerHTML = '';
+    sel.appendChild(firstOpt);
+    adminCourses.forEach(c=>{ const opt=document.createElement('option'); opt.value=c.id; opt.textContent=c.title; sel.appendChild(opt); });
+  });
+}
+
+function populateStudentSelect() {
+  const sel = document.getElementById('smsStudentSelect');
+  if(!sel) return;
+  adminStudents.forEach(s=>{ const opt=document.createElement('option'); opt.value=s.id; opt.dataset.phone=s.parent_phone||''; opt.textContent=s.full_name; sel.appendChild(opt); });
+}
+
+function fillParentPhone(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  document.getElementById('parentPhoneInput').value = opt.dataset.phone || '';
+}
+
+function fillTemplate() {
+  const type = document.getElementById('smsType').value;
+  const templates = {
+    absence:'Dear Parent, your ward was absent from today\'s live class. Please ensure regular attendance for better performance.',
+    low_marks:'Dear Parent, your ward scored below passing marks in the recent quiz. Please encourage more study time.',
+    progress:'Dear Parent, weekly progress report: Your ward has completed 60% of enrolled courses this week. Keep it up!',
+    general:''
+  };
+  document.getElementById('smsMessage').value = templates[type] || '';
+  updateSMSCount();
+}
+
+function updateSMSCount() {
+  const msg = document.getElementById('smsMessage').value;
+  document.getElementById('smsCharCount').textContent = `${msg.length}/160 characters`;
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const msgArea = document.getElementById('smsMessage');
+  if(msgArea) msgArea.addEventListener('input', updateSMSCount);
+});
+
+function sendSMSToStudent(phone, name) {
+  showSection('parent-sms');
+  if(phone) { document.getElementById('parentPhoneInput').value=phone; }
+  document.getElementById('smsMessage').value = `Dear Parent of ${name}, this is a message from EduVerse regarding your ward's progress.`;
+}
+
+async function sendSMS(e) {
+  e.preventDefault();
+  const form = document.getElementById('smsForm');
+  const fd = new FormData(form);
+  const payload = { student_id: fd.get('student_id'), parent_phone: fd.get('parent_phone'), message: fd.get('message'), type: fd.get('type') };
+  if (!payload.parent_phone || !payload.message) { showToast('Phone and message required', 'error'); return; }
+  try {
+    await API.post('/admin/send-sms', payload);
+    showToast('SMS sent successfully! 📱', 'success');
+    smsHistory.unshift({ phone: payload.parent_phone, message: payload.message, type: payload.type, time: new Date() });
+    renderSMSHistory();
+    form.reset();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+function renderSMSHistory() {
+  const el = document.getElementById('smsHistory');
+  if (!smsHistory.length) { el.innerHTML='<p style="color:var(--text-muted);font-size:0.88rem;text-align:center;padding:20px">No messages sent yet</p>'; return; }
+  el.innerHTML = smsHistory.map(s=>`
+    <div class="sms-log">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:0.82rem;font-weight:600"><i class="fas fa-phone"></i> ${s.phone}</span>
+        <span class="badge badge-success">Sent</span>
+      </div>
+      <p style="font-size:0.8rem;color:var(--text-secondary)">${s.message}</p>
+      <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">${s.time.toLocaleTimeString()}</div>
+    </div>`).join('');
+}
+
+function openUpdateLive(id, status) {
+  document.getElementById('updateLiveId').value = id;
+  document.getElementById('updateLiveStatus').value = status;
+  document.getElementById('recordingUrl').value = '';
+  openModal('updateLiveModal');
+}
+
+async function updateLiveStatus() {
+  const id = document.getElementById('updateLiveId').value;
+  const status = document.getElementById('updateLiveStatus').value;
+  const recording_url = document.getElementById('recordingUrl').value;
+  try {
+    await API.put(`/live-classes/${id}/status`, { status, recording_url });
+    showToast('Status updated!', 'success');
+    closeModal('updateLiveModal');
+    loadLiveClasses();
+    if (status==='completed'&&recording_url) showToast('Recording added as video lecture!', 'info');
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function addCourse(e) {
+  e.preventDefault();
+  const fd = new FormData(document.getElementById('addCourseForm'));
+  const payload = Object.fromEntries(fd);
+  try {
+    await API.post('/courses', payload);
+    showToast('Course added successfully! 🎉', 'success');
+    closeModal('addCourseModal');
+    document.getElementById('addCourseForm').reset();
+    loadCourses(); loadStats();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function deleteCourse(id) {
+  if (!confirm('Delete this course? This action cannot be undone.')) return;
+  try {
+    await API.delete(`/courses/${id}`);
+    showToast('Course deleted', 'info');
+    loadCourses(); loadStats();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function scheduleLive(e) {
+  e.preventDefault();
+  const fd = new FormData(document.getElementById('scheduleLiveForm'));
+  const payload = Object.fromEntries(fd);
+  try {
+    await API.post('/live-classes', payload);
+    showToast('Live class scheduled! Students can see it now.', 'success');
+    closeModal('scheduleLiveModal');
+    document.getElementById('scheduleLiveForm').reset();
+    loadLiveClasses();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+// QUIZ BUILDER
+function addQuestion() {
+  qCount++;
+  const container = document.getElementById('questionsContainer');
+  const qDiv = document.createElement('div');
+  qDiv.className = 'question-builder';
+  qDiv.id = `q-${qCount}`;
+  qDiv.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="q-num">Question ${qCount}</div>
+      <button type="button" onclick="this.closest('.question-builder').remove()" style="background:none;color:var(--danger);font-size:0.8rem;border:none;cursor:pointer"><i class="fas fa-trash"></i> Remove</button>
+    </div>
+    <div class="form-group"><input type="text" class="form-control" name="q_${qCount}_text" placeholder="Enter question..." required/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="form-group" style="margin-bottom:0"><label class="form-label" style="font-size:0.75rem">Option A <span class="required">*</span></label><input type="text" class="form-control" name="q_${qCount}_a" placeholder="Option A" required/></div>
+      <div class="form-group" style="margin-bottom:0"><label class="form-label" style="font-size:0.75rem">Option B <span class="required">*</span></label><input type="text" class="form-control" name="q_${qCount}_b" placeholder="Option B" required/></div>
+      <div class="form-group" style="margin-bottom:0"><label class="form-label" style="font-size:0.75rem">Option C</label><input type="text" class="form-control" name="q_${qCount}_c" placeholder="Option C"/></div>
+      <div class="form-group" style="margin-bottom:0"><label class="form-label" style="font-size:0.75rem">Option D</label><input type="text" class="form-control" name="q_${qCount}_d" placeholder="Option D"/></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="form-group" style="flex:1;margin-bottom:0"><label class="form-label" style="font-size:0.75rem">Correct Answer</label>
+        <select class="form-control" name="q_${qCount}_correct"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
+      <div class="form-group" style="width:100px;margin-bottom:0"><label class="form-label" style="font-size:0.75rem">Marks</label><input type="number" class="form-control" name="q_${qCount}_marks" value="10" min="1"/></div>
+    </div>`;
+  container.appendChild(qDiv);
+}
+
+async function createQuiz(e) {
+  e.preventDefault();
+  const fd = new FormData(document.getElementById('createQuizForm'));
+  const payload = { title: fd.get('title'), course_id: fd.get('course_id')||null, duration_minutes: parseInt(fd.get('duration_minutes')||30), pass_percent: parseInt(fd.get('pass_percent')||60), questions: [] };
+  const qDivs = document.querySelectorAll('.question-builder');
+  qDivs.forEach(qDiv => {
+    const id = qDiv.id.split('-')[1];
+    const text = fd.get(`q_${id}_text`);
+    if (!text) return;
+    payload.questions.push({ question_text:text, option_a:fd.get(`q_${id}_a`), option_b:fd.get(`q_${id}_b`), option_c:fd.get(`q_${id}_c`)||null, option_d:fd.get(`q_${id}_d`)||null, correct_option:fd.get(`q_${id}_correct`), marks:parseInt(fd.get(`q_${id}_marks`)||10) });
+  });
+  if (!payload.questions.length) { showToast('Add at least one question!', 'error'); return; }
+  try {
+    await API.post('/quizzes', payload);
+    showToast('Quiz created successfully! 🎉', 'success');
+    closeModal('createQuizModal');
+    document.getElementById('createQuizForm').reset();
+    document.getElementById('questionsContainer').innerHTML = '';
+    qCount = 0;
+    loadQuizzes();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function uploadNotes(e) {
+  e.preventDefault();
+  const btn = document.getElementById('uploadNotesBtn');
+  btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Uploading...';
+  const formData = new FormData(document.getElementById('uploadNotesForm'));
+  try {
+    await API.postForm('/notes/upload', formData);
+    showToast('Notes uploaded successfully!', 'success');
+    document.getElementById('uploadNotesForm').reset();
+    document.getElementById('notesFileName').textContent = 'Click to upload PDF file';
+  } catch(e) { showToast(e.message, 'error'); }
+  btn.disabled=false; btn.innerHTML='<i class="fas fa-upload"></i> Upload Notes';
+}
+
+async function uploadVideo(e) {
+  e.preventDefault();
+  const formData = new FormData(document.getElementById('uploadVideoForm'));
+  try {
+    await API.postForm('/videos/upload', formData);
+    showToast('Video uploaded successfully!', 'success');
+    document.getElementById('uploadVideoForm').reset();
+    document.getElementById('videoFileName').textContent = 'Click to upload video';
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+function showSection(name, el) {
+  document.querySelectorAll('[id^="sec-"]').forEach(s=>s.style.display='none');
+  const sec=document.getElementById('sec-'+name);
+  if(sec) sec.style.display='block';
+  document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+document.addEventListener('DOMContentLoaded', initAdmin);
+addQuestion(); // Add first question by default when modal opens
+document.getElementById('createQuizModal').addEventListener('click', function(e){ if(e.target===this && !document.getElementById('questionsContainer').children.length) addQuestion(); });
+</script>
+</body>
+</html>

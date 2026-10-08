@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Courses — EduVerse</title>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .page-top { padding: calc(var(--nav-h) + 40px) 24px 32px; background: var(--bg-2); border-bottom: 1px solid var(--border); }
+    .page-top-inner { max-width:1280px; margin:0 auto; }
+    .page-top h1 { font-family:var(--font-display); font-size:2rem; margin-bottom:6px; }
+    .page-top p { color:var(--text-muted); }
+    .courses-layout { max-width:1280px; margin:0 auto; padding:32px 24px; display:grid; grid-template-columns:260px 1fr; gap:28px; }
+    .sidebar-filter { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:22px; height:fit-content; position:sticky; top:calc(var(--nav-h)+16px); }
+    .filter-section { margin-bottom:24px; }
+    .filter-section h4 { font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-muted); margin-bottom:12px; }
+    .filter-check { display:flex; align-items:center; gap:8px; padding:6px 0; cursor:pointer; font-size:0.88rem; color:var(--text-secondary); }
+    .filter-check input { accent-color:var(--primary); width:15px; height:15px; }
+    .filter-check:hover { color:var(--text-primary); }
+    .filter-check span { flex:1; }
+    .filter-check .count { font-size:0.75rem; color:var(--text-muted); background:rgba(255,255,255,0.06); padding:1px 7px; border-radius:20px; }
+    .sort-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+    .sort-bar p { font-size:0.88rem; color:var(--text-muted); }
+    .sort-select { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); padding:8px 14px; font-size:0.88rem; }
+    .search-bar { display:flex; gap:0; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; margin-bottom:20px; }
+    .search-bar input { flex:1; background:none; color:var(--text-primary); padding:11px 16px; font-size:0.9rem; border:none; }
+    .search-bar button { background:var(--primary); color:#fff; padding:11px 18px; font-size:0.9rem; }
+    .no-results { text-align:center; padding:60px 20px; color:var(--text-muted); grid-column:1/-1; }
+    .no-results i { font-size:3rem; margin-bottom:16px; display:block; }
+    @media(max-width:900px){ .courses-layout{grid-template-columns:1fr} .sidebar-filter{position:relative;top:0;display:none} .sidebar-filter.mobile-open{display:block} }
+    @media(max-width:600px){ .courses-layout{padding:16px} }
+  </style>
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <a href="/" class="nav-logo"><div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>EduVerse</a>
+    <div class="nav-links">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/pages/courses.html" class="nav-link active">Courses</a>
+      <a href="#" class="nav-link" id="navDashLink" style="display:none"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+    </div>
+    <div class="nav-actions">
+      <a href="/pages/login.html" class="btn btn-ghost btn-sm" id="navLoginLink">Log In</a>
+      <a href="/pages/register.html" class="btn btn-primary btn-sm" id="navRegisterLink">Get Started</a>
+      <div id="navUserArea" style="display:none;align-items:center;gap:10px">
+        <div class="nav-avatar" id="navAvatarEl">U</div>
+        <span id="navNameEl" style="font-size:0.88rem;font-weight:600"></span>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="navLogoutBtn" style="display:none" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </div>
+</nav>
+
+<div class="page-top">
+  <div class="page-top-inner">
+    <h1>Browse All Courses</h1>
+    <p id="breadcrumb">Showing all 100+ courses across 10 categories</p>
+  </div>
+</div>
+
+<div class="courses-layout">
+  <!-- SIDEBAR FILTER -->
+  <aside class="sidebar-filter" id="sidebarFilter">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <h3 style="font-size:0.95rem;font-weight:700">Filters</h3>
+      <button class="btn btn-ghost btn-sm" onclick="clearFilters()">Clear all</button>
+    </div>
+
+    <div class="filter-section">
+      <h4>Category</h4>
+      <div id="categoryFilters">
+        <div class="skeleton" style="height:28px;margin-bottom:6px;border-radius:6px"></div>
+        <div class="skeleton" style="height:28px;margin-bottom:6px;border-radius:6px"></div>
+        <div class="skeleton" style="height:28px;margin-bottom:6px;border-radius:6px"></div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <h4>Level</h4>
+      <label class="filter-check"><input type="checkbox" name="level" value="Beginner" onchange="applyFilters()"/><span>Beginner</span></label>
+      <label class="filter-check"><input type="checkbox" name="level" value="Intermediate" onchange="applyFilters()"/><span>Intermediate</span></label>
+      <label class="filter-check"><input type="checkbox" name="level" value="Advanced" onchange="applyFilters()"/><span>Advanced</span></label>
+    </div>
+
+    <div class="filter-section">
+      <h4>Price</h4>
+      <label class="filter-check"><input type="radio" name="price" value="all" checked onchange="applyFilters()"/><span>All</span></label>
+      <label class="filter-check"><input type="radio" name="price" value="free" onchange="applyFilters()"/><span>Free</span></label>
+      <label class="filter-check"><input type="radio" name="price" value="paid" onchange="applyFilters()"/><span>Paid</span></label>
+    </div>
+
+    <div class="filter-section">
+      <h4>Rating</h4>
+      <label class="filter-check"><input type="radio" name="rating" value="any" checked onchange="applyFilters()"/><span>Any Rating</span></label>
+      <label class="filter-check"><input type="radio" name="rating" value="4.5" onchange="applyFilters()"/><span>4.5 & above ★</span></label>
+      <label class="filter-check"><input type="radio" name="rating" value="4.0" onchange="applyFilters()"/><span>4.0 & above ★</span></label>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search courses, instructors, topics..." onkeydown="if(event.key==='Enter')doSearch()"/>
+      <button onclick="doSearch()"><i class="fas fa-search"></i></button>
+    </div>
+
+    <div class="filter-bar" id="quickCats">
+      <span class="filter-chip active" onclick="setCat('',this)">All</span>
+    </div>
+
+    <div class="sort-bar">
+      <p id="resultsCount">Loading courses...</p>
+      <select class="sort-select" onchange="applyFilters()" id="sortSelect">
+        <option value="popular">Most Popular</option>
+        <option value="rating">Top Rated</option>
+        <option value="newest">Newest</option>
+        <option value="price_low">Price: Low to High</option>
+      </select>
+    </div>
+
+    <div class="courses-grid" id="coursesGrid">
+      <div class="skeleton" style="height:320px;border-radius:20px"></div>
+      <div class="skeleton" style="height:320px;border-radius:20px"></div>
+      <div class="skeleton" style="height:320px;border-radius:20px"></div>
+    </div>
+
+    <div class="pagination" id="paginationBar"></div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+let currentPage = 1;
+const perPage = 12;
+let totalCourses = 0;
+let categories = [];
+let activeCat = '';
+let allCourses = [];
+
+// Read URL params on load
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('cat')) activeCat = urlParams.get('cat');
+if (urlParams.get('search')) { document.addEventListener('DOMContentLoaded', () => { const si = document.getElementById('searchInput'); if(si) si.value = urlParams.get('search'); }); }
+
+async function loadCategories() {
+  try {
+    categories = await API.get('/categories');
+    const catFilters = document.getElementById('categoryFilters');
+    catFilters.innerHTML = categories.map(c => `
+      <label class="filter-check">
+        <input type="checkbox" name="category" value="${c.slug}" ${activeCat===c.slug?'checked':''} onchange="applyFilters()"/>
+        <span>${c.name}</span>
+        <span class="count">${c.course_count||0}</span>
+      </label>`).join('');
+
+    const quickCats = document.getElementById('quickCats');
+    quickCats.innerHTML = `<span class="filter-chip ${!activeCat?'active':''}" onclick="setCat('',this)">All</span>` +
+      categories.map(c => `<span class="filter-chip ${activeCat===c.slug?'active':''}" onclick="setCat('${c.slug}',this)">${c.name}</span>`).join('');
+  } catch(e) { console.error(e); }
+}
+
+function setCat(slug, el) {
+  activeCat = slug;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  // Sync checkboxes
+  document.querySelectorAll('input[name="category"]').forEach(cb => { cb.checked = (cb.value === slug); });
+  currentPage = 1;
+  loadCourses();
+}
+
+function applyFilters() {
+  currentPage = 1;
+  const catChecks = [...document.querySelectorAll('input[name="category"]:checked')].map(c=>c.value);
+  if (catChecks.length === 1) { activeCat = catChecks[0]; } else if (catChecks.length === 0) { activeCat = ''; }
+  loadCourses();
+}
+
+function clearFilters() {
+  activeCat = '';
+  document.querySelectorAll('input[name="category"], input[name="level"]').forEach(cb => cb.checked = false);
+  document.querySelector('input[name="price"][value="all"]').checked = true;
+  document.querySelector('input[name="rating"][value="any"]').checked = true;
+  document.getElementById('searchInput').value = '';
+  document.querySelectorAll('.filter-chip').forEach((c,i) => c.classList.toggle('active', i===0));
+  currentPage = 1;
+  loadCourses();
+}
+
+function doSearch() {
+  currentPage = 1;
+  loadCourses();
+}
+
+async function loadCourses() {
+  const grid = document.getElementById('coursesGrid');
+  grid.innerHTML = '<div class="skeleton" style="height:320px;border-radius:20px"></div>'.repeat(3);
+
+  const search = document.getElementById('searchInput')?.value.trim();
+  const levels = [...document.querySelectorAll('input[name="level"]:checked')].map(l=>l.value);
+  const price = document.querySelector('input[name="price"]:checked')?.value || 'all';
+  const rating = document.querySelector('input[name="rating"]:checked')?.value || 'any';
+  const sort = document.getElementById('sortSelect')?.value || 'popular';
+
+  let url = `/courses?page=${currentPage}&limit=${perPage}&sort=${sort}`;
+  if (activeCat) url += `&category=${activeCat}`;
+  if (search) url += `&search=${encodeURIComponent(search)}`;
+  if (levels.length === 1) url += `&level=${levels[0]}`;
+
+  try {
+    const data = await API.get(url);
+    let courses = data.courses || [];
+    totalCourses = data.total || courses.length;
+
+    // Client-side filters
+    if (levels.length > 0 && levels.length < 3) courses = courses.filter(c => levels.includes(c.level));
+    if (price === 'free') courses = courses.filter(c => !c.price || c.price==0);
+    if (price === 'paid') courses = courses.filter(c => c.price > 0);
+    if (rating !== 'any') courses = courses.filter(c => c.rating >= parseFloat(rating));
+
+    document.getElementById('resultsCount').textContent = `${totalCourses} courses found`;
+    document.getElementById('breadcrumb').textContent = activeCat
+      ? `Showing courses in "${categories.find(c=>c.slug===activeCat)?.name || activeCat}"`
+      : `Showing all ${totalCourses} courses`;
+
+    if (!courses.length) {
+      grid.innerHTML = `<div class="no-results"><i class="fas fa-search"></i><h3>No courses found</h3><p>Try different keywords or filters</p></div>`;
+      document.getElementById('paginationBar').innerHTML = '';
+      return;
+    }
+
+    grid.innerHTML = courses.map(c => buildCourseCard(c)).join('');
+    renderPagination(data.total || totalCourses);
+  } catch(e) {
+    grid.innerHTML = `<div class="no-results"><i class="fas fa-exclamation-circle"></i><p>${e.message}</p></div>`;
+  }
+}
+
+function renderPagination(total) {
+  const totalPages = Math.ceil(total / perPage);
+  if (totalPages <= 1) { document.getElementById('paginationBar').innerHTML = ''; return; }
+  let html = '';
+  html += `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}><i class="fas fa-chevron-left"></i></button>`;
+  for (let i=1; i<=Math.min(totalPages,7); i++) {
+    html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  if (totalPages > 7) html += `<span style="color:var(--text-muted);padding:0 4px">...</span><button class="page-btn ${totalPages===currentPage?'active':''}" onclick="goPage(${totalPages})">${totalPages}</button>`;
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}><i class="fas fa-chevron-right"></i></button>`;
+  document.getElementById('paginationBar').innerHTML = html;
+}
+
+function goPage(p) {
+  const totalPages = Math.ceil(totalCourses / perPage);
+  if (p < 1 || p > totalPages) return;
+  currentPage = p;
+  loadCourses();
+  window.scrollTo({ top: 200, behavior: 'smooth' });
+}
+
+loadCategories();
+loadCourses();
+window.addEventListener('scroll', () => document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20));
+</script>
+</body>
+</html>
